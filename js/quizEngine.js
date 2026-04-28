@@ -112,7 +112,7 @@ export class QuizEngine {
         }
 
         // Fill remaining slots if any rule was short
-        while (examQuestions.length < 25 && this.allQuestions.length > 0) {
+        while (examQuestions.length < 25 && examQuestions.length < this.allQuestions.length) {
             const randomQ = this.allQuestions[Math.floor(Math.random() * this.allQuestions.length)];
             if (!examQuestions.includes(randomQ)) {
                 randomQ.examPoints = 1;

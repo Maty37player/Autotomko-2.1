@@ -70,8 +70,17 @@ export class SimulatorManager {
         };
 
         const onCarLoad = () => {
-            console.log("car.png loaded successfully.");
+            console.log(`${this.assets.car.src.split('/').pop()} loaded successfully.`);
             onLoad();
+        };
+
+        const onCarError = (e) => {
+            if (this.assets.car.src.includes('car37.png')) {
+                console.warn("Failed to load car37.png, trying fallback car.png");
+                this.assets.car.src = 'car.png';
+            } else {
+                console.error('Failed to load car assets completely.', e);
+            }
         };
 
         console.log("Loading map...");
@@ -81,7 +90,7 @@ export class SimulatorManager {
 
         console.log("Loading car...");
         this.assets.car.onload = onCarLoad;
-        this.assets.car.onerror = (e) => console.error('Failed to load car.png', e);
+        this.assets.car.onerror = onCarError;
         this.assets.car.src = 'car37.png';
     }
 

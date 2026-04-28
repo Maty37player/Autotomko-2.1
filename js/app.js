@@ -54,7 +54,13 @@ class App {
 
         const btnHeaderStart = document.getElementById('btn-header-start');
         if (btnHeaderStart) {
-            btnHeaderStart.addEventListener('click', () => this.navigate('learning'));
+            btnHeaderStart.addEventListener('click', () => {
+                if (this.currentView === 'exam') {
+                    this._startExamSession();
+                } else {
+                    this.navigate('learning');
+                }
+            });
         }
 
         // Brand logo
@@ -192,43 +198,48 @@ class App {
     // --- Exam Logic ---
 
     _startExamSession() {
-        if (this.quizEngine.allQuestions.length === 0) {
+        if (!this.quizEngine.allQuestions || this.quizEngine.allQuestions.length === 0) {
             alert("Otázky se ještě načítají. Prosím počkejte chvíli.");
             return;
         }
 
-        const questions = this.quizEngine.generateMockExam();
+        try {
+            const questions = this.quizEngine.generateMockExam();
 
-        this.currentExamSession = {
-            questions: questions,
-            currentIndex: 0,
-            answers: new Array(25).fill(null).map((_, i) => ({
-                question: questions[i],
-                selectedAnswerId: null
-            })),
-            timeRemaining: 30 * 60 // 30 minutes in seconds
-        };
+            this.currentExamSession = {
+                questions: questions,
+                currentIndex: 0,
+                answers: new Array(questions.length).fill(null).map((_, i) => ({
+                    question: questions[i],
+                    selectedAnswerId: null
+                })),
+                timeRemaining: 30 * 60 // 30 minutes in seconds
+            };
 
-        // Reset submit button from review mode
-        const btnSubmitExam = document.getElementById('btn-submit-exam');
-        if (btnSubmitExam) {
-            btnSubmitExam.innerHTML = `<span class="material-symbols-outlined">done_all</span> Odevzdat test`;
-            btnSubmitExam.classList.replace('bg-surface-variant', 'bg-[#E09900]');
-            btnSubmitExam.classList.replace('text-on-surface', 'text-white');
+            // Reset submit button from review mode
+            const btnSubmitExam = document.getElementById('btn-submit-exam');
+            if (btnSubmitExam) {
+                btnSubmitExam.innerHTML = `<span class="material-symbols-outlined">done_all</span> Odevzdat test`;
+                btnSubmitExam.classList.replace('bg-surface-variant', 'bg-[#E09900]');
+                btnSubmitExam.classList.replace('text-on-surface', 'text-white');
+            }
+
+            // Reset timer container from review mode
+            const timerContainer = document.getElementById('exam-timer-container');
+            if (timerContainer) {
+                timerContainer.innerHTML = `<span class="material-symbols-outlined">timer</span><span id="exam-timer">30:00</span>`;
+                timerContainer.className = "font-h3 text-h3 text-error uppercase tracking-wider flex items-center gap-sm bg-error-container px-md py-sm rounded-lg border border-[#ffb4ab]";
+                // update reference in uiManager just in case
+                this.uiManager.examTimer = document.getElementById('exam-timer');
+            }
+
+            this.uiManager.toggleExamState('session');
+            this._startExamTimer();
+            this._renderCurrentExamQuestion();
+        } catch (error) {
+            console.error("Failed to start exam session:", error);
+            alert("Nepodařilo se spustit test. Zkuste prosím obnovit stránku.");
         }
-
-        // Reset timer container from review mode
-        const timerContainer = document.getElementById('exam-timer');
-        if (timerContainer && timerContainer.parentElement) {
-            timerContainer.parentElement.innerHTML = `<span class="material-symbols-outlined">timer</span><span id="exam-timer">30:00</span>`;
-            timerContainer.parentElement.className = "font-h3 text-h3 text-error uppercase tracking-wider flex items-center gap-sm bg-error-container px-md py-sm rounded-lg border border-[#ffb4ab]";
-            // update reference in uiManager just in case
-            this.uiManager.examTimer = document.getElementById('exam-timer');
-        }
-
-        this.uiManager.toggleExamState('session');
-        this._startExamTimer();
-        this._renderCurrentExamQuestion();
     }
 
     _startExamTimer() {
