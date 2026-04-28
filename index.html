@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>AutoTomko - SafeDrive Academy</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00639a",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#2ea3f2",
+                        "on-primary-container": "#003657",
+                        "surface": "#f8f9ff",
+                        "on-surface": "#0b1c30",
+                        "surface-variant": "#d3e4fe",
+                        "on-surface-variant": "#3f4851",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#eff4ff",
+                        "surface-container": "#e5eeff",
+                        "surface-container-high": "#dce9ff",
+                        "outline": "#6f7882",
+                        "outline-variant": "#bfc7d3",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#feb229",
+                        "background": "#f8f9ff",
+                        "on-background": "#0b1c30"
+                    },
+                    spacing: {
+                        "sm": "0.5rem",
+                        "md": "1rem",
+                        "lg": "1.5rem",
+                        "xl": "2.5rem",
+                        "gutter": "1.5rem",
+                        "container-max": "1280px"
+                    },
+                    fontFamily: {
+                        "h1": ["Fira Sans"],
+                        "h2": ["Fira Sans"],
+                        "h3": ["Fira Sans"],
+                        "body-md": ["Fira Sans"],
+                        "body-lg": ["Fira Sans"],
+                        "button": ["Fira Sans"],
+                        "label-caps": ["Fira Sans"]
+                    },
+                    fontSize: {
+                        "h1": ["2.5rem", { lineHeight: "1.2", fontWeight: "700" }],
+                        "h2": ["2rem", { lineHeight: "1.25", fontWeight: "600" }],
+                        "h3": ["1.5rem", { lineHeight: "1.3", fontWeight: "600" }],
+                        "body-md": ["1rem", { lineHeight: "1.5", fontWeight: "400" }],
+                        "body-lg": ["1.125rem", { lineHeight: "1.6", fontWeight: "400" }],
+                        "button": ["1rem", { lineHeight: "1", fontWeight: "600" }],
+                        "label-caps": ["0.875rem", { lineHeight: "1", letterSpacing: "0.05em", fontWeight: "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f8f9ff; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Views */
+        .view-section {
+            display: none !important;
+            width: 100%;
+        }
+        .view-section.active {
+            display: flex !important;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Simulator Specifics */
+        #simulator-canvas {
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            width: 100%;
+            height: 400px;
+            box-shadow: inset 0 4px 12px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body class="bg-[#f0f4f8] text-on-background min-h-screen flex flex-col font-body-md antialiased pt-16">
+    
+    <!-- TopAppBar -->
+    <header class="bg-white dark:bg-slate-900 font-sans antialiased text-slate-900 dark:text-slate-100 fixed top-0 w-full z-50 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="max-w-[1280px] mx-auto flex justify-between items-center px-6 h-16">
+            <div class="text-xl font-bold text-blue-600 dark:text-blue-400 cursor-pointer" id="nav-brand">
+                AutoTomko
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <button data-view="welcome" class="nav-tab text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-1 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200">
+                    Vítejte
+                </button>
+                <button data-view="learning" class="nav-tab text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 px-3 py-2 rounded">
+                    Učení
+                </button>
+                <button data-view="exam" class="nav-tab text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 px-3 py-2 rounded">
+                    Zkušební test
+                </button>
+                <button data-view="simulation" class="nav-tab text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 px-3 py-2 rounded">
+                    Simulace
+                </button>
+            </nav>
+            <button id="btn-header-start" class="bg-primary text-on-primary font-button text-button px-md py-sm rounded border-b-2 border-[#004a75] hover:bg-surface-tint active:scale-95 transition-all hidden md:block">
+                Začít
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Canvas -->
+    <main class="flex-grow flex flex-col p-gutter max-w-container-max mx-auto w-full">
+        
+        <!-- Welcome View -->
+        <section id="welcome-view" class="view-section active h-full flex-col justify-center">
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col md:flex-row mt-xl">
+                <div class="md:w-1/2 relative min-h-[300px] md:min-h-full">
+                    <img alt="Driving" class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdRCAZhH9mxP3L35SAWtQxC17WfeaRSKn_-hQD8aApZsVKP7O4oF3Ekj3SDcotLbrKKZoTQ3zBB_PlKsx_nYhFHoGM2xipmawNXTuIP7sIeZ5_Fxu_NRunu5SyYBGkK0JPtVL_0Ykzy2OpBbA5WhflACpM9Wbnvt276s8Z5Y7Y3Wzhd9A8AszeuIj5jlNDgQoNX5DaDfo4g4uIOwhv91rYSlfgc78vn6k9_DlSZ_cFl2cMl8nWLnN_xrK_JqWWSSCEIiXBaExfMFMO" />
+                    <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent md:hidden"></div>
+                </div>
+                <div class="md:w-1/2 p-xl flex flex-col justify-center">
+                    <h1 class="font-h1 text-h1 text-on-surface mb-md">Ovládněte silnice s jistotou.</h1>
+                    <p class="font-body-lg text-body-lg text-on-surface-variant mb-xl">
+                        Vítejte na cestě k získání profesionálního řidičského oprávnění. Projděte si komplexní lekce, vyzkoušejte reálné scénáře a složte závěrečnou zkoušku s naším strukturovaným vzdělávacím plánem.
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-md mb-xl">
+                        <div class="flex flex-col items-start p-md bg-surface border border-outline-variant rounded-lg">
+                            <span class="material-symbols-outlined text-primary mb-sm text-3xl">menu_book</span>
+                            <h3 class="font-h3 text-h3 text-on-surface text-lg mb-xs">Učení</h3>
+                            <p class="font-body-md text-body-md text-on-surface-variant text-sm">Strukturované moduly</p>
+                        </div>
+                        <div class="flex flex-col items-start p-md bg-surface border border-outline-variant rounded-lg">
+                            <span class="material-symbols-outlined text-secondary-container mb-sm text-3xl">sports_esports</span>
+                            <h3 class="font-h3 text-h3 text-on-surface text-lg mb-xs">Simulace</h3>
+                            <p class="font-body-md text-body-md text-on-surface-variant text-sm">Interaktivní scénáře</p>
+                        </div>
+                        <div class="flex flex-col items-start p-md bg-surface border border-outline-variant rounded-lg">
+                            <span class="material-symbols-outlined text-error mb-sm text-3xl">assignment_turned_in</span>
+                            <h3 class="font-h3 text-h3 text-on-surface text-lg mb-xs">Zkušební test</h3>
+                            <p class="font-body-md text-body-md text-on-surface-variant text-sm">Oficiální certifikace</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-md">
+                        <button id="btn-start-learning" class="bg-primary text-on-primary font-button text-button px-lg py-md rounded border-b-2 border-[#004a75] hover:bg-surface-tint active:scale-95 transition-all text-center">
+                            Začít se učit
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Learning View -->
+        <section id="learning-view" class="view-section flex-col">
+            <h2 class="font-h2 text-h2 text-on-surface mb-lg mt-md">Kategorie otázek</h2>
+            <div id="loading-indicator" class="text-on-surface-variant font-body-lg flex items-center gap-sm">
+                <span class="material-symbols-outlined animate-spin">refresh</span> Načítání otázek...
+            </div>
+            <div id="category-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md hidden">
+                <!-- Categories injected here -->
+            </div>
+            
+            <!-- Study Session Sub-View -->
+            <div id="study-session" class="hidden w-full">
+                <button id="btn-back-categories" class="mb-md font-button text-button text-on-surface-variant flex items-center gap-xs hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined">arrow_back</span> Zpět na kategorie
+                </button>
+                
+                <div class="mb-lg flex items-center justify-between">
+                    <div id="study-progress-text" class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Otázka 1 z 10</div>
+                </div>
+                <div class="w-full h-2 bg-surface-variant rounded-full mb-xl overflow-hidden">
+                    <div id="study-progress-bar" class="h-full bg-primary rounded-full transition-all duration-300 w-[10%]"></div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-xl">
+                    <div class="lg:col-span-7 flex flex-col gap-lg">
+                        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+                            <h1 id="study-question-title" class="font-h2 text-h2 text-on-surface mb-md">Question Text</h1>
+                        </div>
+                        <div id="study-media-container" class="rounded-xl overflow-hidden border border-outline-variant shadow-[0_4px_12px_rgba(0,0,0,0.05)] relative bg-surface-variant aspect-[16/9] hidden">
+                            <!-- Image or Video injected here -->
+                        </div>
+                    </div>
+                    <div class="lg:col-span-5 flex flex-col gap-md" id="study-answers-container">
+                        <!-- Answers injected here -->
+                    </div>
+                </div>
+                
+                <div class="mt-xl flex justify-end">
+                    <button id="btn-next-question" class="hidden font-button text-button bg-[#E09900] text-white px-xl py-3 rounded-xl border-b-[3px] border-[#b37a00] hover:bg-[#cca800] transition-colors shadow-sm flex items-center gap-sm">
+                        Další otázka <span class="material-symbols-outlined">arrow_forward</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Exam View -->
+        <section id="exam-view" class="view-section flex-col">
+            <!-- Start Screen -->
+            <div id="exam-start-screen" class="flex flex-col items-center justify-center mt-xl text-center">
+                <span class="material-symbols-outlined text-6xl text-primary mb-md">assignment</span>
+                <h2 class="font-h1 text-h1 text-on-surface mb-md">Oficiální zkušební test</h2>
+                <p class="font-body-lg text-on-surface-variant max-w-2xl mb-lg">
+                    Tento test simuluje skutečné prostředí zkoušky. Bude Vám položeno 25 otázek vybraných podle oficiálních pravidel. Na dokončení testu máte 30 minut. Pro úspěšné složení je nutné získat minimálně 43 bodů z 50.
+                </p>
+                <button id="btn-start-exam" class="bg-error text-on-error font-button text-button px-xl py-md rounded-xl border-b-4 border-[#93000a] hover:bg-[#93000a] active:scale-95 transition-all text-lg flex items-center gap-sm">
+                    <span class="material-symbols-outlined">play_arrow</span> Spustit test
+                </button>
+            </div>
+
+            <!-- Active Exam Session -->
+            <div id="exam-session" class="hidden w-full">
+                <div class="mb-lg flex items-center justify-between bg-surface-container-low p-md rounded-xl border border-outline-variant shadow-sm w-full">
+                    <div class="flex flex-col w-full md:w-auto">
+                        <span id="exam-progress-text" class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs">Otázka 1 z 25</span>
+                        <div class="w-48 h-2 bg-surface-variant rounded-full overflow-hidden">
+                            <div id="exam-progress-bar" class="h-full bg-primary rounded-full transition-all duration-300 w-[4%]"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="font-h3 text-h3 text-error uppercase tracking-wider flex items-center gap-sm bg-error-container px-md py-sm rounded-lg border border-[#ffb4ab]">
+                        <span class="material-symbols-outlined">timer</span>
+                        <span id="exam-timer">30:00</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-xl">
+                    <!-- Left Column: Question -->
+                    <div class="lg:col-span-8 flex flex-col gap-lg">
+                        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+                            <div class="flex justify-between items-start mb-md">
+                                <h1 id="exam-question-title" class="font-h2 text-h2 text-on-surface">Question Text</h1>
+                                <span id="exam-question-points" class="font-label-caps text-primary bg-primary-container text-on-primary-container px-sm py-xs rounded ml-md shrink-0">2 Body</span>
+                            </div>
+                        </div>
+                        <div id="exam-media-container" class="rounded-xl overflow-hidden border border-outline-variant shadow-[0_4px_12px_rgba(0,0,0,0.05)] relative bg-surface-variant aspect-[16/9] hidden">
+                            <!-- Image or Video injected here -->
+                        </div>
+
+                        <!-- Answers Column -->
+                        <div class="flex flex-col gap-md mt-md" id="exam-answers-container">
+                            <!-- Answers injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Navigation Grid -->
+                    <div class="lg:col-span-4 flex flex-col gap-lg">
+                        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+                            <h3 class="font-h3 text-h3 text-on-surface mb-md">Navigace testem</h3>
+                            <div id="exam-nav-grid" class="grid grid-cols-5 gap-sm mb-lg">
+                                <!-- 25 Buttons injected here -->
+                            </div>
+                            <div class="border-t border-outline-variant pt-md mt-auto">
+                                <button id="btn-submit-exam" class="w-full font-button text-button bg-[#E09900] text-white px-md py-3 rounded-xl border-b-[3px] border-[#b37a00] hover:bg-[#cca800] transition-colors shadow-sm flex items-center justify-center gap-sm">
+                                    <span class="material-symbols-outlined">done_all</span> Odevzdat test
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exam Results -->
+            <div id="exam-results" class="hidden flex flex-col items-center mt-xl text-center w-full">
+                <div id="exam-result-icon" class="w-24 h-24 rounded-full flex items-center justify-center mb-md text-4xl text-white shadow-lg">
+                    <!-- Check or Close injected here -->
+                </div>
+                <h1 id="exam-result-status" class="font-h1 text-h1 mb-sm uppercase tracking-widest">PROSPĚL</h1>
+                <p class="font-body-lg text-on-surface-variant mb-lg">Získali jste <span id="exam-result-score" class="font-bold text-on-surface text-xl">45</span> z 50 bodů.</p>
+                
+                <div class="flex gap-md">
+                    <button id="btn-review-exam" class="bg-surface-container text-primary font-button text-button px-lg py-md rounded border border-outline-variant hover:bg-surface-container-high transition-colors">
+                        Zkontrolovat odpovědi
+                    </button>
+                    <button id="btn-retake-exam" class="bg-primary text-on-primary font-button text-button px-lg py-md rounded border-b-2 border-[#004a75] hover:bg-surface-tint transition-all">
+                        Opakovat test
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Simulation View -->
+        <section id="simulation-view" class="view-section flex-col w-full">
+            <h2 class="font-h2 text-h2 text-on-surface mb-lg mt-md">2D Jízdní simulátor</h2>
+            
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm mb-lg">
+                <div class="flex justify-between items-center mb-md">
+                    <div class="flex gap-md font-body-lg text-on-surface-variant">
+                        <div>Rychlost: <span id="sim-speed" class="font-bold text-primary">0 km/h</span></div>
+                        <div>Motor: <span id="sim-rpm" class="font-bold text-primary">0 RPM</span></div>
+                        <div>Zařazeno: <span id="sim-gear" class="font-bold text-primary">N</span></div>
+                    </div>
+                    <button id="btn-toggle-engine" class="font-button bg-primary text-on-primary px-md py-sm rounded flex items-center gap-xs">
+                        <span class="material-symbols-outlined">power_settings_new</span> Nastartovat
+                    </button>
+                </div>
+                
+                <canvas id="simulator-canvas"></canvas>
+            </div>
+            
+            <!-- Pedals UI -->
+            <div class="flex justify-center gap-xl mt-lg">
+                <!-- Clutch -->
+                <div class="flex flex-col items-center gap-sm">
+                    <div id="pedal-clutch" class="w-16 h-32 bg-slate-300 border-b-4 border-slate-400 rounded-lg shadow-md transition-all duration-75 flex items-end justify-center pb-2 select-none">
+                        <span class="font-bold text-slate-500">A</span>
+                    </div>
+                    <span class="font-label-caps text-on-surface-variant">Spojka</span>
+                </div>
+                <!-- Brake -->
+                <div class="flex flex-col items-center gap-sm">
+                    <div id="pedal-brake" class="w-20 h-24 bg-slate-300 border-b-4 border-slate-400 rounded-lg shadow-md transition-all duration-75 flex items-end justify-center pb-2 select-none self-end">
+                        <span class="font-bold text-slate-500">S</span>
+                    </div>
+                    <span class="font-label-caps text-on-surface-variant">Brzda</span>
+                </div>
+                <!-- Gas -->
+                <div class="flex flex-col items-center gap-sm">
+                    <div id="pedal-gas" class="w-12 h-32 bg-slate-300 border-b-4 border-slate-400 rounded-lg shadow-md transition-all duration-75 flex items-end justify-center pb-2 select-none">
+                        <span class="font-bold text-slate-500">D</span>
+                    </div>
+                    <span class="font-label-caps text-on-surface-variant">Plyn</span>
+                </div>
+            </div>
+            
+            <!-- Steering -->
+            <div class="flex justify-center gap-xl mt-xl">
+                 <div class="flex items-center gap-md text-on-surface-variant font-body-md">
+                     <span class="material-symbols-outlined">keyboard_arrow_left</span>
+                     Zatočit doleva (Šipka vlevo)
+                 </div>
+                 <div class="flex items-center gap-md text-on-surface-variant font-body-md">
+                     Zatočit doprava (Šipka vpravo)
+                     <span class="material-symbols-outlined">keyboard_arrow_right</span>
+                 </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-50 dark:bg-slate-950 w-full mt-auto border-t border-slate-200 dark:border-slate-800">
+        <div class="max-w-[1280px] mx-auto py-12 px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="font-semibold text-slate-900 dark:text-white">SafeDrive Academy</div>
+            <div class="text-sm text-slate-500 dark:text-slate-400">© 2024 SafeDrive Academy. Professional Driver Certification.</div>
+            <nav class="flex flex-wrap justify-center gap-4 text-sm text-slate-500 dark:text-slate-400">
+                <a class="text-slate-500 hover:text-blue-500 hover:underline cursor-pointer">Terms of Service</a>
+                <a class="text-slate-500 hover:text-blue-500 hover:underline cursor-pointer">Privacy Policy</a>
+                <a class="text-slate-500 hover:text-blue-500 hover:underline cursor-pointer">Contact Support</a>
+            </nav>
+        </div>
+    </footer>
+
+    <!-- App Logic -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

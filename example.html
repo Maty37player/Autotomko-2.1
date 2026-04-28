@@ -1,0 +1,488 @@
+<!-- AutoTomko Welcome Screen -->
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Welcome - AutoTomko</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-primary": "#95ccff",
+                        "on-surface": "#0b1c30",
+                        "secondary-fixed-dim": "#ffba46",
+                        "on-tertiary-fixed": "#2b1700",
+                        "surface-bright": "#f8f9ff",
+                        "outline-variant": "#bfc7d3",
+                        "secondary-container": "#feb229",
+                        "surface-tint": "#00639a",
+                        "surface-container": "#e5eeff",
+                        "surface-variant": "#d3e4fe",
+                        "on-primary-fixed": "#001d32",
+                        "secondary-fixed": "#ffddb0",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed": "#cde5ff",
+                        "surface-container-high": "#dce9ff",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#95ccff",
+                        "inverse-surface": "#213145",
+                        "error": "#ba1a1a",
+                        "surface-container-low": "#eff4ff",
+                        "on-primary-fixed-variant": "#004a75",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#2ea3f2",
+                        "on-secondary": "#ffffff",
+                        "outline": "#6f7882",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-container": "#4c2d00",
+                        "primary": "#00639a",
+                        "tertiary-container": "#db8a00",
+                        "on-primary-container": "#003657",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-tertiary-fixed-variant": "#663e00",
+                        "tertiary-fixed-dim": "#ffb963",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#cbdbf5",
+                        "tertiary": "#865300",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#614000",
+                        "surface": "#f8f9ff",
+                        "on-secondary-fixed": "#281800",
+                        "background": "#f8f9ff",
+                        "tertiary-fixed": "#ffddb9",
+                        "on-surface-variant": "#3f4851",
+                        "on-secondary-container": "#6c4800",
+                        "inverse-on-surface": "#eaf1ff",
+                        "on-background": "#0b1c30",
+                        "secondary": "#805600"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sm": "0.5rem",
+                        "gutter": "1.5rem",
+                        "base": "4px",
+                        "md": "1rem",
+                        "xs": "0.25rem",
+                        "lg": "1.5rem",
+                        "xl": "2.5rem",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "h3": ["Fira Sans"],
+                        "body-md": ["Fira Sans"],
+                        "body-lg": ["Fira Sans"],
+                        "h1": ["Fira Sans"],
+                        "h2": ["Fira Sans"],
+                        "label-caps": ["Fira Sans"],
+                        "button": ["Fira Sans"]
+                    },
+                    "fontSize": {
+                        "h3": ["1.5rem", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "body-md": ["1rem", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["1.125rem", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "h1": ["2.5rem", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "h2": ["2rem", { "lineHeight": "1.25", "fontWeight": "600" }],
+                        "label-caps": ["0.875rem", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "button": ["1rem", { "lineHeight": "1", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+
+<body class="bg-[#f0f4f8] text-on-background min-h-screen flex flex-col font-body-md antialiased pt-16">
+    <!-- TopAppBar -->
+    <header
+        class="bg-white dark:bg-slate-900 font-sans antialiased text-slate-900 dark:text-slate-100 fixed top-0 w-full z-50 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="max-w-[1280px] mx-auto flex justify-between items-center px-6 h-16">
+            <div class="text-xl font-bold text-blue-600 dark:text-blue-400">
+                SafeDrive Academy
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <a class="text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-1 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 active:scale-95 transition-transform"
+                    href="#">
+                    Welcome
+                </a>
+                <a class="text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 active:scale-95 transition-transform"
+                    href="#">
+                    Learning
+                </a>
+                <a class="text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 active:scale-95 transition-transform"
+                    href="#">
+                    Final Test
+                </a>
+                <a class="text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 active:scale-95 transition-transform"
+                    href="#">
+                    Simulation
+                </a>
+            </nav>
+            <button
+                class="bg-primary text-on-primary font-button text-button px-md py-sm rounded-DEFAULT border-b-2 border-on-primary-fixed-variant hover:bg-surface-tint active:scale-95 transition-all hidden md:block">
+                Get Started
+            </button>
+        </div>
+    </header>
+    <!-- Main Content Canvas -->
+    <main class="flex-grow flex items-center justify-center p-gutter">
+        <div class="max-w-container-max w-full mx-auto">
+            <!-- Hero Card -->
+            <div
+                class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col md:flex-row">
+                <!-- Hero Image Side -->
+                <div class="md:w-1/2 relative min-h-[300px] md:min-h-full">
+                    <img alt="Person driving a car from the driver's perspective on a sunny day with clear roads."
+                        class="absolute inset-0 w-full h-full object-cover"
+                        data-alt="Perspective shot from inside a modern car driving on a clean suburban road, sunny day, confident mood, soft focus background"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdRCAZhH9mxP3L35SAWtQxC17WfeaRSKn_-hQD8aApZsVKP7O4oF3Ekj3SDcotLbrKKZoTQ3zBB_PlKsx_nYhFHoGM2xipmawNXTuIP7sIeZ5_Fxu_NRunu5SyYBGkK0JPtVL_0Ykzy2OpBbA5WhflACpM9Wbnvt276s8Z5Y7Y3Wzhd9A8AszeuIj5jlNDgQoNX5DaDfo4g4uIOwhv91rYSlfgc78vn6k9_DlSZ_cFl2cMl8nWLnN_xrK_JqWWSSCEIiXBaExfMFMO" />
+                    <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent md:hidden"></div>
+                </div>
+                <!-- Hero Content Side -->
+                <div class="md:w-1/2 p-xl flex flex-col justify-center">
+                    <h1 class="font-h1 text-h1 text-on-surface mb-md">
+                        Master the Road with Confidence.
+                    </h1>
+                    <p class="font-body-lg text-body-lg text-on-surface-variant mb-xl">
+                        Welcome to your professional certification journey. Navigate through comprehensive lessons,
+                        practice real-world scenarios, and pass your final test with our structured, focus-driven
+                        curriculum.
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-md mb-xl">
+                        <div class="flex flex-col items-start p-md bg-surface border border-outline-variant rounded-lg">
+                            <span aria-hidden="true" class="material-symbols-outlined text-primary mb-sm text-3xl"
+                                data-icon="menu_book">menu_book</span>
+                            <h3 class="font-h3 text-h3 text-on-surface text-lg mb-xs">Learning</h3>
+                            <p class="font-body-md text-body-md text-on-surface-variant text-sm">Structured modules</p>
+                        </div>
+                        <div class="flex flex-col items-start p-md bg-surface border border-outline-variant rounded-lg">
+                            <span aria-hidden="true"
+                                class="material-symbols-outlined text-secondary-container mb-sm text-3xl"
+                                data-icon="sports_esports">sports_esports</span>
+                            <h3 class="font-h3 text-h3 text-on-surface text-lg mb-xs">Simulation</h3>
+                            <p class="font-body-md text-body-md text-on-surface-variant text-sm">Interactive scenarios
+                            </p>
+                        </div>
+                        <div class="flex flex-col items-start p-md bg-surface border border-outline-variant rounded-lg">
+                            <span aria-hidden="true" class="material-symbols-outlined text-error mb-sm text-3xl"
+                                data-icon="assignment_turned_in">assignment_turned_in</span>
+                            <h3 class="font-h3 text-h3 text-on-surface text-lg mb-xs">Final Test</h3>
+                            <p class="font-body-md text-body-md text-on-surface-variant text-sm">Official certification
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-md">
+                        <button
+                            class="bg-primary text-on-primary font-button text-button px-lg py-md rounded-DEFAULT border-b-2 border-on-primary-fixed-variant hover:bg-surface-tint active:scale-95 transition-all text-center">
+                            Start Learning
+                        </button>
+                        <button
+                            class="bg-surface-container text-primary font-button text-button px-lg py-md rounded-DEFAULT border-b-2 border-outline-variant hover:bg-surface-container-high active:scale-95 transition-all text-center">
+                            View Syllabus
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Footer -->
+    <footer class="bg-slate-50 dark:bg-slate-950 w-full mt-auto border-t border-slate-200 dark:border-slate-800">
+        <div class="max-w-[1280px] mx-auto py-12 px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="font-semibold text-slate-900 dark:text-white">
+                SafeDrive Academy
+            </div>
+            <div class="text-sm text-slate-500 dark:text-slate-400">
+                © 2024 SafeDrive Academy. Professional Driver Certification.
+            </div>
+            <nav class="flex flex-wrap justify-center gap-4 text-sm text-slate-500 dark:text-slate-400">
+                <a class="text-slate-500 hover:text-blue-500 hover:underline cursor-pointer" href="#">Terms of
+                    Service</a>
+                <a class="text-slate-500 hover:text-blue-500 hover:underline cursor-pointer" href="#">Privacy Policy</a>
+                <a class="text-slate-500 hover:text-blue-500 hover:underline cursor-pointer" href="#">Contact
+                    Support</a>
+                <a class="text-slate-500 hover:text-blue-500 hover:underline cursor-pointer" href="#">Accessibility</a>
+            </nav>
+        </div>
+    </footer>
+</body>
+
+</html>
+
+<!-- AutoTomko Enhanced Final Test -->
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>AutoTomko - Final Knowledge Test</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-primary": "#95ccff",
+                        "on-surface": "#0b1c30",
+                        "secondary-fixed-dim": "#ffba46",
+                        "on-tertiary-fixed": "#2b1700",
+                        "surface-bright": "#f8f9ff",
+                        "outline-variant": "#bfc7d3",
+                        "secondary-container": "#feb229",
+                        "surface-tint": "#00639a",
+                        "surface-container": "#e5eeff",
+                        "surface-variant": "#d3e4fe",
+                        "on-primary-fixed": "#001d32",
+                        "secondary-fixed": "#ffddb0",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed": "#cde5ff",
+                        "surface-container-high": "#dce9ff",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#95ccff",
+                        "inverse-surface": "#213145",
+                        "error": "#ba1a1a",
+                        "surface-container-low": "#eff4ff",
+                        "on-primary-fixed-variant": "#004a75",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#2ea3f2",
+                        "on-secondary": "#ffffff",
+                        "outline": "#6f7882",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-container": "#4c2d00",
+                        "primary": "#00639a",
+                        "tertiary-container": "#db8a00",
+                        "on-primary-container": "#003657",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-tertiary-fixed-variant": "#663e00",
+                        "tertiary-fixed-dim": "#ffb963",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#cbdbf5",
+                        "tertiary": "#865300",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#614000",
+                        "surface": "#f8f9ff",
+                        "on-secondary-fixed": "#281800",
+                        "background": "#f8f9ff",
+                        "tertiary-fixed": "#ffddb9",
+                        "on-surface-variant": "#3f4851",
+                        "on-secondary-container": "#6c4800",
+                        "inverse-on-surface": "#eaf1ff",
+                        "on-background": "#0b1c30",
+                        "secondary": "#805600"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sm": "0.5rem",
+                        "gutter": "1.5rem",
+                        "base": "4px",
+                        "md": "1rem",
+                        "xs": "0.25rem",
+                        "lg": "1.5rem",
+                        "xl": "2.5rem",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "h3": ["Fira Sans"],
+                        "body-md": ["Fira Sans"],
+                        "body-lg": ["Fira Sans"],
+                        "h1": ["Fira Sans"],
+                        "h2": ["Fira Sans"],
+                        "label-caps": ["Fira Sans"],
+                        "button": ["Fira Sans"]
+                    },
+                    "fontSize": {
+                        "h3": ["1.5rem", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "body-md": ["1rem", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["1.125rem", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "h1": ["2.5rem", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "h2": ["2rem", { "lineHeight": "1.25", "fontWeight": "600" }],
+                        "label-caps": ["0.875rem", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "button": ["1rem", { "lineHeight": "1", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f8f9ff;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+
+<body class="font-body-md text-body-md text-on-background bg-background min-h-screen flex flex-col">
+    <!-- TopAppBar Shared Component -->
+    <header
+        class="fixed top-0 w-full z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm font-sans antialiased text-slate-900 dark:text-slate-100">
+        <div class="max-w-[1280px] mx-auto flex justify-between items-center px-6 h-16">
+            <div class="text-xl font-bold text-blue-600 dark:text-blue-400">SafeDrive Academy</div>
+            <nav class="hidden md:flex gap-6">
+                <a class="text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 active:scale-95 transition-transform px-3 py-2 rounded"
+                    href="#">Welcome</a>
+                <a class="text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 active:scale-95 transition-transform px-3 py-2 rounded"
+                    href="#">Learning</a>
+                <a class="text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-1 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 active:scale-95 transition-transform px-3 py-2 rounded"
+                    href="#">Final Test</a>
+                <a class="text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 active:scale-95 transition-transform px-3 py-2 rounded"
+                    href="#">Simulation</a>
+            </nav>
+            <button
+                class="font-button text-button bg-primary text-on-primary px-4 py-2 rounded-lg border-b-2 border-surface-tint hover:bg-primary-container hover:text-on-primary-container transition-colors">Get
+                Started</button>
+        </div>
+    </header>
+    <!-- Main Content Canvas -->
+    <main class="flex-grow pt-[88px] pb-xl px-gutter max-w-container-max mx-auto w-full">
+        <!-- Step Indicator -->
+        <div class="mb-lg flex items-center justify-between">
+            <div class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Question 12 of
+                30</div>
+            <div class="font-label-caps text-label-caps text-primary uppercase tracking-wider flex items-center gap-sm">
+                <span class="material-symbols-outlined text-[18px]">timer</span>
+                <span>14:22 Remaining</span>
+            </div>
+        </div>
+        <!-- Progress Bar -->
+        <div class="w-full h-2 bg-surface-variant rounded-full mb-xl overflow-hidden">
+            <div class="h-full bg-primary rounded-full w-[40%]"></div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-xl">
+            <!-- Question & Image Column -->
+            <div class="lg:col-span-7 flex flex-col gap-lg">
+                <div
+                    class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+                    <h1 class="font-h2 text-h2 text-on-surface mb-md">When approaching this intersection, what is the
+                        correct procedure?</h1>
+                    <p class="font-body-lg text-body-lg text-on-surface-variant">Review the scenario presented in the
+                        image below carefully before selecting your answer. Pay attention to road markings and signage.
+                    </p>
+                </div>
+                <div
+                    class="rounded-xl overflow-hidden border border-outline-variant shadow-[0_4px_12px_rgba(0,0,0,0.05)] relative bg-surface-variant aspect-[16/9]">
+                    <img alt="View from driver seat approaching a complex urban intersection with multiple traffic lights, pedestrian crosswalks, and clearly marked turning lanes on a sunny day."
+                        class="w-full h-full object-cover"
+                        data-alt="View from driver seat approaching a complex urban intersection with multiple traffic lights, pedestrian crosswalks, and clearly marked turning lanes on a sunny day."
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCwP4XRLj5nMF8zR8UfFRLX4GkkLtesSC9WArLketRN_vHvYMOrtO6kBM0DWFiH1zYfU0wOPEk-gJRoJ7sYMxsZg4wl1gnV_pynmQedYEx53pmq1HcphvIvT8vH8Jd6yxcTvdxt3IucWC7CuxpTtG2gbSjkfv0aLo5zuVNfGRxbreJDeamVc4xFG5bOfkRdFUCjCmd-1K5y5TXKwqXJUN1GTwBpZNn2ERBI1_H-T6XsVho5qXQWj34qN9cLMMhfr9drIk4TM7MM-1V" />
+                </div>
+            </div>
+            <!-- Answers Column -->
+            <div class="lg:col-span-5 flex flex-col gap-md">
+                <!-- Unselected Option -->
+                <button
+                    class="w-full text-left bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex items-center gap-md hover:bg-surface-container-low transition-colors shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+                    <div
+                        class="w-8 h-8 rounded-full border-2 border-outline-variant flex items-center justify-center flex-shrink-0 text-on-surface-variant font-button text-button">
+                        A</div>
+                    <span class="font-body-lg text-body-lg text-on-surface">Accelerate to clear the intersection quickly
+                        before the light turns red.</span>
+                </button>
+                <!-- Incorrect Selected Option Example -->
+                <button
+                    class="w-full text-left bg-error-container border-2 border-error rounded-xl p-md flex items-center gap-md shadow-[0_4px_12px_rgba(0,0,0,0.05)] relative overflow-hidden">
+                    <div
+                        class="w-8 h-8 rounded-full border-2 border-error bg-error text-on-error flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-[18px]">close</span>
+                    </div>
+                    <span class="font-body-lg text-body-lg text-on-error-container font-medium">Brake sharply
+                        immediately to stop before the crosswalk.</span>
+                </button>
+                <!-- Correct Selected Option Example -->
+                <button
+                    class="w-full text-left bg-[#e6f4ea] border-2 border-[#1e8e3e] rounded-xl p-md flex items-center gap-md shadow-[0_4px_12px_rgba(0,0,0,0.05)] relative overflow-hidden">
+                    <div
+                        class="w-8 h-8 rounded-full border-2 border-[#1e8e3e] bg-[#1e8e3e] text-white flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-[18px]">check</span>
+                    </div>
+                    <span class="font-body-lg text-body-lg text-[#0d652d] font-medium">Maintain speed but prepare to
+                        stop if the light changes, checking mirrors.</span>
+                </button>
+                <!-- Unselected Option -->
+                <button
+                    class="w-full text-left bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex items-center gap-md hover:bg-surface-container-low transition-colors shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+                    <div
+                        class="w-8 h-8 rounded-full border-2 border-outline-variant flex items-center justify-center flex-shrink-0 text-on-surface-variant font-button text-button">
+                        D</div>
+                    <span class="font-body-lg text-body-lg text-on-surface">Change lanes rapidly to the right lane to
+                        turn.</span>
+                </button>
+                <div class="mt-auto pt-lg flex justify-between items-center">
+                    <button
+                        class="font-button text-button text-on-surface-variant hover:text-on-surface flex items-center gap-xs px-4 py-2">
+                        <span class="material-symbols-outlined">flag</span>
+                        Flag for Review
+                    </button>
+                    <!-- High-Stakes Action Button -->
+                    <button
+                        class="font-button text-button bg-[#E09900] text-white px-xl py-3 rounded-xl border-b-[3px] border-[#b37a00] hover:bg-[#cca800] transition-colors shadow-sm flex items-center gap-sm">
+                        Submit Answer
+                        <span class="material-symbols-outlined">arrow_forward</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Instructional Alert (Example if needed) -->
+        <div class="mt-xl bg-[#E09900] text-white p-md rounded-xl flex items-start gap-md shadow-sm">
+            <span class="material-symbols-outlined mt-1">warning</span>
+            <div>
+                <h4 class="font-h3 text-h3 mb-xs">Important Tip</h4>
+                <p class="font-body-md text-body-md opacity-90">Always anticipate traffic light changes at busy
+                    intersections to avoid harsh braking.</p>
+            </div>
+        </div>
+    </main>
+    <!-- Footer Shared Component -->
+    <footer
+        class="w-full mt-auto bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 text-sm text-slate-500 dark:text-slate-400 flat no shadows">
+        <div class="max-w-[1280px] mx-auto py-12 px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="font-semibold text-slate-900 dark:text-white">© 2024 SafeDrive Academy. Professional Driver
+                Certification.</div>
+            <nav class="flex gap-4">
+                <a class="text-slate-500 hover:text-blue-500 hover:underline cursor-pointer" href="#">Terms of
+                    Service</a>
+                <a class="text-slate-500 hover:text-blue-500 hover:underline cursor-pointer" href="#">Privacy Policy</a>
+                <a class="text-slate-500 hover:text-blue-500 hover:underline cursor-pointer" href="#">Contact
+                    Support</a>
+                <a class="text-slate-500 hover:text-blue-500 hover:underline cursor-pointer" href="#">Accessibility</a>
+            </nav>
+        </div>
+    </footer>
+</body>
+
+</html>
