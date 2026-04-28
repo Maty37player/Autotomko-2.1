@@ -38,11 +38,25 @@ export class UIManager {
         this.examResultStatus = document.getElementById('exam-result-status');
         this.examResultScore = document.getElementById('exam-result-score');
 
-        // Simulator Tutorial Elements
+        // Simulator UI Elements
         this.simInstructionText = document.getElementById('sim-instruction-text');
-        this.simInstructionOverlay = document.getElementById('sim-instruction-overlay');
+        this.simInstructionBanner = document.getElementById('sim-instruction-banner');
+        this.simMissionText = document.getElementById('sim-mission-text');
+        this.simSuccessOverlay = document.getElementById('sim-success-overlay');
+        this.simBarSteering = document.getElementById('sim-bar-steering');
+        this.simBarClutch = document.getElementById('sim-bar-clutch');
+        this.simBarBrake = document.getElementById('sim-bar-brake');
+        this.simBarGas = document.getElementById('sim-bar-gas');
+        
         this.steeringWheelContainer = document.getElementById('steering-wheel-container');
         this.visualSteeringWheel = document.getElementById('visual-steering-wheel');
+
+        // Controls Modal Elements
+        this.controlsModal = document.getElementById('controls-modal');
+        this.btnOpenControls = document.getElementById('btn-open-controls');
+        this.btnCloseControls = document.getElementById('close-controls-modal');
+        this.rebindButtons = document.querySelectorAll('.rebind-button');
+        this.bindLabels = document.querySelectorAll('[data-bind-label]');
     }
 
     /**
@@ -78,21 +92,30 @@ export class UIManager {
         this.categoryGrid.classList.remove('hidden');
         this.categoryGrid.innerHTML = '';
 
+        const categoryImages = {
+            9: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=400&q=80",
+            10: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&q=80",
+            11: "https://images.unsplash.com/photo-1468091730376-d3b5558b71ab?auto=format&fit=crop&q=80&w=400",
+            12: "https://images.unsplash.com/photo-1494905998402-395d579af36f?w=400&q=80",
+            13: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&q=80",
+            14: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=400&q=80",
+            15: "https://images.unsplash.com/photo-1516574187841-cb9cc2ca948b?w=400&q=80",
+        };
+
         categories.forEach(cat => {
             const btn = document.createElement('button');
-            btn.className = "flex flex-col items-start p-md bg-surface-container-lowest border border-outline-variant rounded-xl hover:bg-surface-container-low transition-colors shadow-sm text-left active:scale-[0.98]";
+            btn.className = "flex flex-col items-start bg-surface-container-lowest border border-outline-variant rounded-xl hover:bg-surface-container-low transition-all shadow-sm text-left active:scale-[0.98] overflow-hidden group";
             
-            // Icon logic based on category (optional, using generic menu_book)
-            let icon = 'menu_book';
-            if (cat.name.includes('Signs')) icon = 'traffic';
-            if (cat.name.includes('Situations')) icon = 'alt_route';
+            const imageUrl = categoryImages[cat.id] || "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=400&q=80";
 
             btn.innerHTML = `
-                <div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center mb-md">
-                    <span class="material-symbols-outlined text-primary">${icon}</span>
+                <div class="w-full h-32 overflow-hidden">
+                    <img src="${imageUrl}" alt="${cat.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                 </div>
-                <h3 class="font-h3 text-h3 text-on-surface text-lg mb-xs">${cat.name}</h3>
-                <p class="font-body-md text-body-md text-on-surface-variant text-sm">${cat.count} Otázek</p>
+                <div class="p-md">
+                    <h3 class="font-h3 text-h3 text-on-surface text-lg mb-xs">${cat.name}</h3>
+                    <p class="font-body-md text-body-md text-on-surface-variant text-sm">${cat.count} Otázek</p>
+                </div>
             `;
             
             btn.addEventListener('click', () => onSelect(cat));
@@ -536,14 +559,115 @@ export class UIManager {
         if (!this.simInstructionText) return;
         if (this.simInstructionText.innerText === text) return;
 
-        this.simInstructionOverlay.classList.remove('scale-100', 'opacity-100');
-        this.simInstructionOverlay.classList.add('scale-95', 'opacity-0');
+        this.simInstructionBanner.classList.add('opacity-50');
 
         setTimeout(() => {
             this.simInstructionText.innerText = text;
-            this.simInstructionOverlay.classList.remove('scale-95', 'opacity-0');
-            this.simInstructionOverlay.classList.add('scale-100', 'opacity-100');
+            this.simInstructionBanner.classList.remove('opacity-50');
         }, 150);
+    }
+
+    /**
+     * Updates the control status bars.
+     */
+    updateSimControls(inputs) {
+        if (this.simBarSteering) {
+            // Steering is -1 to 1, map to 0-100% with center at 50%
+            const steeringPos = (inputs.steering + 1) * 50;
+            this.simBarSteering.style.left = `calc(${steeringPos}% - 4px)`;
+        }
+        if (this.simBarClutch) this.simBarClutch.style.width = `${inputs.clutch * 100}%`;
+        if (this.simBarBrake) this.simBarBrake.style.width = `${inputs.brake * 100}%`;
+        if (this.simBarGas) this.simBarGas.style.width = `${inputs.gas * 100}%`;
+    }
+
+    /**
+     * Sets the mission text.
+     */
+    updateSimMission(text) {
+        if (this.simMissionText) this.simMissionText.innerText = text;
+    }
+
+    /**
+     * Shows/hides the mission success overlay.
+     */
+    toggleSimSuccess(show) {
+        if (!this.simSuccessOverlay) return;
+        if (show) {
+            this.simSuccessOverlay.classList.remove('hidden');
+            this.simSuccessOverlay.classList.add('flex');
+        } else {
+            this.simSuccessOverlay.classList.add('hidden');
+            this.simSuccessOverlay.classList.remove('flex');
+        }
+    }
+
+    /**
+     * Toggles the controls modal.
+     */
+    toggleControlsModal(show) {
+        if (!this.controlsModal) return;
+        if (show) {
+            this.controlsModal.classList.remove('hidden');
+            this.controlsModal.classList.add('flex');
+        } else {
+            this.controlsModal.classList.add('hidden');
+            this.controlsModal.classList.remove('flex');
+        }
+    }
+
+    /**
+     * Sets a button into "listening" state for rebinding.
+     * @param {HTMLButtonElement} button 
+     */
+    startRebinding(button, onComplete) {
+        const originalText = button.innerText;
+        button.innerText = '...';
+        button.classList.replace('bg-surface-container-high', 'bg-primary');
+        button.classList.replace('text-on-surface', 'text-white');
+        
+        const handleKeyPress = (e) => {
+            e.preventDefault();
+            const newKey = e.key.toLowerCase();
+            
+            button.innerText = newKey.toUpperCase();
+            button.classList.replace('bg-primary', 'bg-surface-container-high');
+            // Restore colors
+            button.className = "rebind-button bg-surface-container-high px-lg py-2 rounded-lg font-bold min-w-[100px] hover:bg-primary-container transition-colors uppercase border border-outline-variant";
+
+            // Update labels in the guide
+            const controlId = button.dataset.control;
+            this.updateGuideLabels(controlId, newKey);
+
+            window.removeEventListener('keydown', handleKeyPress);
+            onComplete(controlId, newKey);
+        };
+
+        window.addEventListener('keydown', handleKeyPress);
+    }
+
+    /**
+     * Updates labels in the "How to start" guide if they match a changed control.
+     */
+    updateGuideLabels(controlId, newKey) {
+        this.bindLabels.forEach(label => {
+            if (label.dataset.bindLabel === controlId) {
+                label.innerText = newKey.toUpperCase();
+            }
+        });
+    }
+
+    /**
+     * Syncs the modal buttons with current controls.
+     */
+    syncControlButtons(controls) {
+        this.rebindButtons.forEach(btn => {
+            const id = btn.dataset.control;
+            if (controls[id]) {
+                btn.innerText = controls[id].toUpperCase();
+                this.updateGuideLabels(id, controls[id]);
+            }
+        });
     }
 
     /**

@@ -20,6 +20,8 @@ class App {
 
     async init() {
         this._bindNavigation();
+        this._bindContactModal();
+        this._bindControlsModal();
 
         // Show Welcome View by default
         this.uiManager.switchView('welcome');
@@ -101,6 +103,11 @@ class App {
             btnSubmitExam.addEventListener('click', () => this._submitExam());
         }
 
+        const btnStopExam = document.getElementById('btn-stop-exam');
+        if (btnStopExam) {
+            btnStopExam.addEventListener('click', () => this._stopExamSession());
+        }
+
         const btnRetakeExam = document.getElementById('btn-retake-exam');
         if (btnRetakeExam) {
             btnRetakeExam.addEventListener('click', () => this.navigate('exam'));
@@ -114,6 +121,62 @@ class App {
         }
     }
 
+    _bindContactModal() {
+        const btnContact = document.getElementById('btn-contact-support');
+        const modal = document.getElementById('contact-modal');
+        const closeBtn = document.getElementById('close-contact-modal');
+
+        if (btnContact && modal && closeBtn) {
+            btnContact.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            });
+
+            closeBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }
+            });
+        }
+    }
+
+    _bindControlsModal() {
+        const btnOpen = this.uiManager.btnOpenControls;
+        const btnClose = this.uiManager.btnCloseControls;
+        const modal = this.uiManager.controlsModal;
+
+        if (btnOpen && btnClose && modal) {
+            btnOpen.addEventListener('click', () => {
+                this.uiManager.syncControlButtons(this.simulatorManager.controls);
+                this.uiManager.toggleControlsModal(true);
+            });
+
+            btnClose.addEventListener('click', () => {
+                this.uiManager.toggleControlsModal(false);
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) this.uiManager.toggleControlsModal(false);
+            });
+        }
+
+        // Rebind buttons
+        this.uiManager.rebindButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.uiManager.startRebinding(btn, (controlId, newKey) => {
+                    this.simulatorManager.controls[controlId] = newKey;
+                    console.log(`Rebound ${controlId} to ${newKey}`);
+                });
+            });
+        });
+    }
+
     navigate(viewId) {
         this.currentView = viewId;
         this.uiManager.switchView(viewId);
@@ -124,6 +187,7 @@ class App {
         } else if (viewId === 'exam') {
             this._initExamView();
         } else if (viewId === 'simulation') {
+            this.uiManager.syncControlButtons(this.simulatorManager.controls);
             this.simulatorManager.start();
         } else {
             this.simulatorManager.stop();
@@ -224,7 +288,7 @@ class App {
             // Reset submit button from review mode
             const btnSubmitExam = document.getElementById('btn-submit-exam');
             if (btnSubmitExam) {
-                btnSubmitExam.innerHTML = `<span class="material-symbols-outlined">done_all</span> Odevzdat test`;
+                btnSubmitExam.innerHTML = `<span class="material-symbols-outlined">done_all</span> Ukončit test`;
                 btnSubmitExam.classList.replace('bg-surface-variant', 'bg-[#E09900]');
                 btnSubmitExam.classList.replace('text-on-surface', 'text-white');
             }
@@ -327,6 +391,16 @@ class App {
         // Save session for review, then clear current
         this.lastExamSession = this.currentExamSession;
         this.currentExamSession = null;
+    }
+
+    _stopExamSession() {
+        if (!this.currentExamSession) return;
+        
+        if (confirm("Opravdu chcete zastavit test? Váš postup bude ztracen.")) {
+            clearInterval(this.examTimerInterval);
+            this.currentExamSession = null;
+            this.uiManager.toggleExamState('start');
+        }
     }
 
     _startExamReview() {

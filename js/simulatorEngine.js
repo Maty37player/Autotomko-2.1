@@ -20,6 +20,18 @@ export class SimulatorManager {
             ignition: false
         };
 
+        // Control Bindings (Defaults)
+        this.controls = {
+            gas: 'd',
+            brake: 's',
+            clutch: 'a',
+            steeringLeft: 'arrowleft',
+            steeringRight: 'arrowright',
+            ignition: 'e',
+            gear1: '1',
+            gearN: '0'
+        };
+
         this.keys = {}; // Track active keys for robust steering
 
         // Realistic Engine States
@@ -44,7 +56,8 @@ export class SimulatorManager {
             angle: 0,
             acceleration: 0,
             objectiveComplete: false,
-            shakeTimer: 0 // For stalling effect
+            shakeTimer: 0, // For stalling effect
+            zoom: 2.5 // Default camera zoom (increased for better road focus)
         };
 
         this.targetZone = { x: 150, y: 150, w: 60, h: 100 }; // Parking spot
@@ -109,10 +122,11 @@ export class SimulatorManager {
     }
 
     _initCarPosition() {
-        // Assume START is near bottom center
-        this.state.x = this.canvas.width / 2;
-        this.state.y = this.canvas.height - 100;
-        this.state.angle = -Math.PI / 2; // Pointing Up
+        // Spawn at the designated parking spot (World Space / Map pixels)
+        // Middle-right area, second bay in the upper row
+        this.state.x = 2220;
+        this.state.y = 450;
+        this.state.angle = 0; // Pointing Right
     }
 
     _resizeCanvas() {
@@ -125,18 +139,19 @@ export class SimulatorManager {
         // Re-center car if needed
         if (this.state.x === 0) this._initCarPosition();
 
-        // Setup/Resize Collision Canvas to stay in sync
+        // Setup/Resize Collision Canvas to match map's natural size (World Space)
         if (this.assets.map.complete && this.assets.map.naturalWidth > 0) {
             if (!this.colCanvas) {
                 this.colCanvas = document.createElement('canvas');
             }
-            this.colCanvas.width = this.canvas.width;
-            this.colCanvas.height = this.canvas.height;
+            // Use natural dimensions so state.x/y match map pixels exactly
+            this.colCanvas.width = this.assets.map.naturalWidth;
+            this.colCanvas.height = this.assets.map.naturalHeight;
             this.colCtx = this.colCanvas.getContext('2d', { willReadFrequently: true });
             
-            // CRITICAL: Always redraw the map on the collision canvas after resizing
-            this.colCtx.drawImage(this.assets.map, 0, 0, this.canvas.width, this.canvas.height);
-            console.log("Collision canvas synchronized:", this.canvas.width, "x", this.canvas.height);
+            // Draw map at 1:1 on collision canvas
+            this.colCtx.drawImage(this.assets.map, 0, 0);
+            console.log("Collision canvas (World Space) synchronized:", this.colCanvas.width, "x", this.colCanvas.height);
         }
     }
 
@@ -205,46 +220,45 @@ export class SimulatorManager {
         const key = e.key.toLowerCase();
         this.keys[key] = isPressed;
 
-        switch (key) {
-            case 'w':
-            case 'gas': 
-                this.inputs.gas = val; 
-                this._updatePedalUI('pedal-gas', isPressed); 
-                break;
-            case 's':
-            case 'brake': 
-                this.inputs.brake = val; 
-                this._updatePedalUI('pedal-brake', isPressed); 
-                break;
-            case 'shift':
-            case 'clutch': 
-                this.inputs.clutch = val; 
-                this._updatePedalUI('pedal-clutch', isPressed); 
-                break;
-            case 'a':
-            case 'd':
-                if (this.keys['a'] && this.keys['d']) this.inputs.steering = 0;
-                else if (this.keys['a']) this.inputs.steering = -1;
-                else if (this.keys['d']) this.inputs.steering = 1;
-                else this.inputs.steering = 0;
-                break;
-            case 'e': 
-                this.inputs.ignition = isPressed;
-                this._handleIgnition(isPressed); 
-                break;
-            case '1':
-                if (isPressed) {
-                    this.state.gear = 1;
-                    if (this.uiGear) this.uiGear.innerText = '1';
-                }
-                break;
-            case '0':
-            case 'n':
-                if (isPressed) {
-                    this.state.gear = 0;
-                    if (this.uiGear) this.uiGear.innerText = 'N';
-                }
-                break;
+        const { controls } = this;
+
+        // Check if the key matches any of our controls
+        if (key === controls.gas) {
+            this.inputs.gas = val;
+            this._updatePedalUI('pedal-gas', isPressed);
+        } else if (key === controls.brake) {
+            this.inputs.brake = val;
+            this._updatePedalUI('pedal-brake', isPressed);
+        } else if (key === controls.clutch) {
+            this.inputs.clutch = val;
+            this._updatePedalUI('pedal-clutch', isPressed);
+        } else if (key === controls.steeringLeft || key === controls.steeringRight) {
+            if (this.keys[controls.steeringLeft] && this.keys[controls.steeringRight]) this.inputs.steering = 0;
+            else if (this.keys[controls.steeringLeft]) this.inputs.steering = -1;
+            else if (this.keys[controls.steeringRight]) this.inputs.steering = 1;
+            else this.inputs.steering = 0;
+        } else if (key === controls.ignition) {
+            this.inputs.ignition = isPressed;
+            this._handleIgnition(isPressed);
+        } else if (key === controls.gear1) {
+            if (isPressed) {
+                this.state.gear = 1;
+                if (this.uiGear) this.uiGear.innerText = '1';
+            }
+        } else if (key === controls.gearN) {
+            if (isPressed) {
+                this.state.gear = 0;
+                if (this.uiGear) this.uiGear.innerText = 'N';
+            }
+        }
+
+        // Zoom Controls
+        if (isPressed) {
+            if (key === '+' || key === '=' || key === 'numplus') {
+                this.state.zoom = Math.min(this.state.zoom + 0.1, 5.0);
+            } else if (key === '-' || key === '_' || key === 'numminus') {
+                this.state.zoom = Math.max(this.state.zoom - 0.1, 0.5);
+            }
         }
     }
 
@@ -482,6 +496,8 @@ export class SimulatorManager {
 
         this.uiManager.updateSimInstruction(msg);
         this.uiManager.rotateSteeringWheel(this.inputs.steering * 0.5);
+        this.uiManager.updateSimControls(this.inputs);
+        this.uiManager.toggleSimSuccess(this.state.objectiveComplete);
 
         // Update Gauges
         if (this.uiSpeed) this.uiSpeed.innerText = `${Math.floor(this.state.speed)} km/h`;
@@ -507,7 +523,9 @@ export class SimulatorManager {
         if (!this.colCtx) return;
         
         try {
-            if (this.state.x >= 0 && this.state.x < this.canvas.width && this.state.y >= 0 && this.state.y < this.canvas.height) {
+            // Check against map (world) dimensions, not canvas (viewport) dimensions
+            if (this.state.x >= 0 && this.state.x < this.colCanvas.width && 
+                this.state.y >= 0 && this.state.y < this.colCanvas.height) {
                 const pixel = this.colCtx.getImageData(this.state.x, this.state.y, 1, 1).data;
                 const r = pixel[0], g = pixel[1], b = pixel[2];
                 const isGrayish = Math.abs(r - g) < 30 && Math.abs(g - b) < 30;
@@ -524,15 +542,32 @@ export class SimulatorManager {
 
     _render() {
         const { width, height } = this.canvas;
+        const zoom = this.state.zoom;
 
         // Clear canvas
-        this.ctx.fillStyle = '#2a2a2a';
-        this.ctx.clearRect(0, 0, width, height);
+        this.ctx.fillStyle = '#111'; 
+        this.ctx.fillRect(0, 0, width, height);
+
+        // --- Follow Camera Setup (Track-Up Mode) ---
+        this.ctx.save();
+        
+        // 1. Move origin to center of screen
+        this.ctx.translate(width / 2, height / 2);
+        
+        // 2. Zoom in
+        this.ctx.scale(zoom, zoom);
+        
+        // 3. Rotate map so car always points UP
+        // car.angle 0 is Right, -PI/2 is UP.
+        // We rotate the world by (-angle - PI/2)
+        this.ctx.rotate(-this.state.angle - Math.PI / 2);
+        
+        // 4. Center on car world position
+        this.ctx.translate(-this.state.x, -this.state.y);
 
         // --- Shake Effect ---
-        this.ctx.save();
         if (this.state.shakeTimer > 0) {
-            const intensity = 5 * (this.state.shakeTimer / 0.5);
+            const intensity = 3 * (this.state.shakeTimer / 0.5);
             this.ctx.translate(
                 (Math.random() - 0.5) * intensity,
                 (Math.random() - 0.5) * intensity
@@ -542,119 +577,39 @@ export class SimulatorManager {
 
         // --- Render Background (Map) ---
         if (this.assets.map.complete && this.assets.map.naturalWidth > 0) {
-            // Draw map covering the canvas (or tiling, or just centered)
-            this.ctx.drawImage(this.assets.map, 0, 0, width, height);
+            this.ctx.drawImage(this.assets.map, 0, 0);
         } else {
-            // Fallback grid
             this.ctx.strokeStyle = '#444';
-            for (let i = 0; i < width; i += 50) {
-                this.ctx.beginPath(); this.ctx.moveTo(i, 0); this.ctx.lineTo(i, height); this.ctx.stroke();
+            this.ctx.lineWidth = 1 / zoom;
+            for (let i = 0; i < 3000; i += 100) {
+                this.ctx.beginPath(); this.ctx.moveTo(i, 0); this.ctx.lineTo(i, 3000); this.ctx.stroke();
+                this.ctx.beginPath(); this.ctx.moveTo(0, i); this.ctx.lineTo(3000, i); this.ctx.stroke();
             }
         }
 
-        // Target Zone (Parking Spot)
-        this.ctx.save();
-        this.ctx.strokeStyle = '#00ff00';
-        this.ctx.lineWidth = 3;
-        this.ctx.setLineDash([10, 10]);
-        this.ctx.strokeRect(this.targetZone.x, this.targetZone.y, this.targetZone.w, this.targetZone.h);
-        this.ctx.fillStyle = 'rgba(0, 255, 0, 0.2)';
-        this.ctx.fillRect(this.targetZone.x, this.targetZone.y, this.targetZone.w, this.targetZone.h);
-        this.ctx.setLineDash([]);
-        this.ctx.fillStyle = 'white';
-        this.ctx.font = 'bold 24px Fira Sans';
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
-        this.ctx.fillText("P", this.targetZone.x + this.targetZone.w / 2, this.targetZone.y + this.targetZone.h / 2);
-        this.ctx.restore();
-
-        // Draw Car
+        // --- Draw Car ---
+        // Car is at (state.x, state.y) in world space.
+        // We've rotated the context by (-state.angle - PI/2).
+        // To make the car point UP on the screen, we draw it at state.angle.
+        // (angle) + (-angle - PI/2) = -PI/2 (UP)
         this.ctx.save();
         this.ctx.translate(this.state.x, this.state.y);
-        this.ctx.rotate(this.state.angle + Math.PI / 2); // Adjust sprite orientation
+        this.ctx.rotate(this.state.angle);
 
-        const carWidth = 40;
+        // Based on 75px lane width, a 70px wide car (narrow side) 
+        // With 1.97:1 aspect ratio, carWidth (long side) should be ~138px
+        const carWidth = 138; 
         if (this.assets.car.complete && this.assets.car.naturalWidth > 0) {
-            // Render car sprite with correct proportions
             const aspectRatio = this.assets.car.naturalHeight / this.assets.car.naturalWidth;
             const carHeight = carWidth * aspectRatio;
+            // The sprite itself is oriented facing RIGHT.
             this.ctx.drawImage(this.assets.car, -carWidth / 2, -carHeight / 2, carWidth, carHeight);
         } else {
-            // Fallback Red Rectangle
             this.ctx.fillStyle = 'red';
-            this.ctx.fillRect(-15, -30, 30, 60);
+            this.ctx.fillRect(-25, -50, 50, 100);
         }
 
         this.ctx.restore();
-
-        this.ctx.restore(); // Restore shake effect save
-
-        // Overlay status if stalled (LEGACY - Replaced by instruction overlay)
-        if (this.state.engineState === this.ENGINE_STATES.OFF && this.state.speed < 1 && !this.state.objectiveComplete) {
-            // We keep it clean now with the new overlay
-        }
-
-        // Draw Mission Text Overlay
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        this.ctx.fillRect(20, 20, 380, 50);
-        this.ctx.fillStyle = 'white';
-        this.ctx.font = 'bold 18px Fira Sans';
-        this.ctx.textAlign = 'left';
-        this.ctx.textBaseline = 'middle';
-        this.ctx.fillText("Úkol: Zaparkujte na parkovacím místě č. 1", 35, 45);
-
-        // Input Debug Overlay
-        const padX = width - 170;
-        const padY = height - 130;
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        this.ctx.fillRect(padX, padY, 150, 110);
-        this.ctx.fillStyle = 'white';
-        this.ctx.font = '12px Fira Sans';
-        this.ctx.textAlign = 'left';
-        this.ctx.textBaseline = 'middle';
-
-        // Steering
-        this.ctx.fillStyle = 'white';
-        this.ctx.fillText("Volant:", padX + 10, padY + 20);
-        this.ctx.fillStyle = '#555';
-        this.ctx.fillRect(padX + 60, padY + 15, 80, 10);
-        this.ctx.fillStyle = '#0cf';
-        this.ctx.fillRect(padX + 60 + 40 + (this.inputs.steering * 40) - 2, padY + 15, 4, 10);
-
-        // Clutch
-        this.ctx.fillStyle = 'white';
-        this.ctx.fillText("Spojka:", padX + 10, padY + 40);
-        this.ctx.fillStyle = '#555';
-        this.ctx.fillRect(padX + 60, padY + 35, 80, 10);
-        this.ctx.fillStyle = '#0cf';
-        this.ctx.fillRect(padX + 60, padY + 35, this.inputs.clutch * 80, 10);
-
-        // Brake
-        this.ctx.fillStyle = 'white';
-        this.ctx.fillText("Brzda:", padX + 10, padY + 60);
-        this.ctx.fillStyle = '#555';
-        this.ctx.fillRect(padX + 60, padY + 55, 80, 10);
-        this.ctx.fillStyle = '#f00';
-        this.ctx.fillRect(padX + 60, padY + 55, this.inputs.brake * 80, 10);
-
-        // Gas
-        this.ctx.fillStyle = 'white';
-        this.ctx.fillText("Plyn:", padX + 10, padY + 80);
-        this.ctx.fillStyle = '#555';
-        this.ctx.fillRect(padX + 60, padY + 75, 80, 10);
-        this.ctx.fillStyle = '#0f0';
-        this.ctx.fillRect(padX + 60, padY + 75, this.inputs.gas * 80, 10);
-
-        // Objective Complete Overlay
-        if (this.state.objectiveComplete) {
-            this.ctx.fillStyle = 'rgba(30, 142, 62, 0.8)'; // Success green
-            this.ctx.fillRect(0, 0, width, height);
-            this.ctx.fillStyle = 'white';
-            this.ctx.font = 'bold 36px Fira Sans';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText("Mise splněna!", width / 2, height / 2);
-            this.ctx.font = '20px Fira Sans';
-            this.ctx.fillText("Úspěšně jste zaparkovali vozidlo.", width / 2, height / 2 + 40);
-        }
+        this.ctx.restore(); // End camera save
     }
 }
