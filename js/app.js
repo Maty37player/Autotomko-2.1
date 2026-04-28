@@ -41,7 +41,7 @@ class App {
         const tabs = document.querySelectorAll('.nav-tab');
         tabs.forEach(tab => {
             tab.addEventListener('click', (e) => {
-                const view = e.target.dataset.view;
+                const view = e.currentTarget.dataset.view;
                 this.navigate(view);
             });
         });

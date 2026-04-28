@@ -192,9 +192,21 @@ export class SimulatorManager {
         const key = e.key.toLowerCase();
 
         switch (key) {
-            case 'w': this.inputs.gas = val; this._updatePedalUI('pedal-gas', isPressed); break;
-            case 's': this.inputs.brake = val; this._updatePedalUI('pedal-brake', isPressed); break;
-            case 'shift': this.inputs.clutch = val; this._updatePedalUI('pedal-clutch', isPressed); break;
+            case 'w':
+            case 'gas': 
+                this.inputs.gas = val; 
+                this._updatePedalUI('pedal-gas', isPressed); 
+                break;
+            case 's':
+            case 'brake': 
+                this.inputs.brake = val; 
+                this._updatePedalUI('pedal-brake', isPressed); 
+                break;
+            case 'shift':
+            case 'clutch': 
+                this.inputs.clutch = val; 
+                this._updatePedalUI('pedal-clutch', isPressed); 
+                break;
             case 'a': this.inputs.steering = isPressed ? -1 : (this.inputs.steering === -1 ? 0 : this.inputs.steering); break;
             case 'd': this.inputs.steering = isPressed ? 1 : (this.inputs.steering === 1 ? 0 : this.inputs.steering); break;
             case 'e': 
