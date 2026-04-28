@@ -20,6 +20,8 @@ export class SimulatorManager {
             ignition: false
         };
 
+        this.keys = {}; // Track active keys for robust steering
+
         // Realistic Engine States
         this.ENGINE_STATES = {
             OFF: 'OFF',
@@ -151,7 +153,7 @@ export class SimulatorManager {
         // Engine Toggle
         if (this.btnToggleEngine) {
             this.btnToggleEngine.addEventListener('click', () => {
-                if (!this.state.isEngineRunning) {
+                if (this.state.engineState !== this.ENGINE_STATES.RUNNING) {
                     this._startEngine();
                 } else {
                     this._stopEngine();
@@ -173,6 +175,17 @@ export class SimulatorManager {
         this._updateEngineUI();
     }
 
+    resetCar(reason = "") {
+        console.log("Resetting car position:", reason);
+        this._initCarPosition();
+        this.state.speed = 0;
+        this.state.acceleration = 0;
+        this.state.rpm = 0;
+        this.state.engineState = this.ENGINE_STATES.STALLED; // Treat as a stall for feedback
+        this.state.lastResetReason = reason;
+        this._updateEngineUI();
+    }
+
     _updateEngineUI() {
         if (!this.btnToggleEngine) return;
 
@@ -190,6 +203,7 @@ export class SimulatorManager {
     _handleKey(e, isPressed) {
         const val = isPressed ? 1 : 0;
         const key = e.key.toLowerCase();
+        this.keys[key] = isPressed;
 
         switch (key) {
             case 'w':
@@ -207,8 +221,13 @@ export class SimulatorManager {
                 this.inputs.clutch = val; 
                 this._updatePedalUI('pedal-clutch', isPressed); 
                 break;
-            case 'a': this.inputs.steering = isPressed ? -1 : (this.inputs.steering === -1 ? 0 : this.inputs.steering); break;
-            case 'd': this.inputs.steering = isPressed ? 1 : (this.inputs.steering === 1 ? 0 : this.inputs.steering); break;
+            case 'a':
+            case 'd':
+                if (this.keys['a'] && this.keys['d']) this.inputs.steering = 0;
+                else if (this.keys['a']) this.inputs.steering = -1;
+                else if (this.keys['d']) this.inputs.steering = 1;
+                else this.inputs.steering = 0;
+                break;
             case 'e': 
                 this.inputs.ignition = isPressed;
                 this._handleIgnition(isPressed); 
@@ -241,6 +260,8 @@ export class SimulatorManager {
         }
 
         // Key pressed
+        this.state.lastResetReason = null; // Clear any past failure messages
+        
         if (this.state.engineState === this.ENGINE_STATES.OFF) {
             this.state.engineState = this.ENGINE_STATES.KEY_INSERTED;
         } else if (this.state.engineState === this.ENGINE_STATES.RUNNING) {
@@ -441,10 +462,22 @@ export class SimulatorManager {
             if (s.speed === 0) {
                 if (this.inputs.clutch < 0.8) msg = "Sešlápni spojku (Shift) a zařaď 1.";
                 else if (s.gear !== 1) msg = "Zařaď 1. rychlostní stupeň.";
-                else msg = "Pomalu pouštěj spojku a přidávej plyn (W) pro rozjezd.";
+                else msg = "Pomalu pouštěj spojku a přidávej plyn (W).";
+            } else if (s.speed < 5) {
+                msg = "Pomalu... Teď zkus zatočit pomocí 'A' a 'D'.";
             } else {
-                msg = "Skvělá práce! Pokračuj v jízdě.";
+                msg = "Skvělá práce! Sleduj cestu.";
+                // Check if off-road (based on collision logic)
+                if (this._isOffRoad()) {
+                    this.resetCar("OFFROAD");
+                }
             }
+        }
+
+        if (this.state.lastResetReason === "OFFROAD") {
+            msg = "Jsi mimo cestu! Zkus to znovu.";
+        } else if (this.state.lastResetReason === "COLLISION") {
+            msg = "NÁRAZ! Sleduj značky a zkus to znovu.";
         }
 
         this.uiManager.updateSimInstruction(msg);
@@ -459,22 +492,33 @@ export class SimulatorManager {
         }
     }
 
-    _handleCollisions() {
-        if (!this.colCtx) return;
-        
-        if (this.state.x >= 0 && this.state.x < this.canvas.width && this.state.y >= 0 && this.state.y < this.canvas.height) {
+    _isOffRoad() {
+        if (!this.colCtx) return false;
+        try {
             const pixel = this.colCtx.getImageData(this.state.x, this.state.y, 1, 1).data;
             const r = pixel[0], g = pixel[1], b = pixel[2];
             const isGrayish = Math.abs(r - g) < 30 && Math.abs(g - b) < 30;
             const isGreenish = g > r + 15 && g > b + 15;
+            return isGreenish;
+        } catch(e) { return false; }
+    }
 
-            if (!isGrayish && !isGreenish) {
-                this.state.speed = 0;
-                this.state.acceleration = 0;
-                if (this.state.engineState === this.ENGINE_STATES.RUNNING) {
-                    this._stopEngine(true);
+    _handleCollisions() {
+        if (!this.colCtx) return;
+        
+        try {
+            if (this.state.x >= 0 && this.state.x < this.canvas.width && this.state.y >= 0 && this.state.y < this.canvas.height) {
+                const pixel = this.colCtx.getImageData(this.state.x, this.state.y, 1, 1).data;
+                const r = pixel[0], g = pixel[1], b = pixel[2];
+                const isGrayish = Math.abs(r - g) < 30 && Math.abs(g - b) < 30;
+                const isGreenish = g > r + 15 && g > b + 15;
+
+                if (!isGrayish && !isGreenish) {
+                    this.resetCar("COLLISION");
                 }
             }
+        } catch (e) {
+            console.warn("Collision detection failed due to canvas state.");
         }
     }
 
