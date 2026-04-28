@@ -3,13 +3,13 @@ export class SimulatorManager {
         this.canvas = document.getElementById('simulator-canvas');
         if (!this.canvas) return;
         this.ctx = this.canvas.getContext('2d');
-        
+
         // UI Elements
         this.uiSpeed = document.getElementById('sim-speed');
         this.uiRpm = document.getElementById('sim-rpm');
         this.uiGear = document.getElementById('sim-gear');
         this.btnToggleEngine = document.getElementById('btn-toggle-engine');
-        
+
         // Input State
         this.inputs = {
             gas: 0,      // 0 to 1
@@ -17,14 +17,14 @@ export class SimulatorManager {
             clutch: 0,   // 0 to 1
             steering: 0  // -1 (left) to 1 (right)
         };
-        
+
         // Advanced Physics State
         this.state = {
             isEngineRunning: false,
             speed: 0,
             rpm: 0,
             gear: 0, // 0 = Neutral, 1 = First Gear
-            
+
             // Car position
             x: 0,
             y: 0,
@@ -44,7 +44,7 @@ export class SimulatorManager {
             car: new Image(),
             loaded: 0
         };
-        
+
         this._loadAssets();
         this._bindEvents();
         this._resizeCanvas();
@@ -82,7 +82,7 @@ export class SimulatorManager {
         console.log("Loading car...");
         this.assets.car.onload = onCarLoad;
         this.assets.car.onerror = (e) => console.error('Failed to load car.png', e);
-        this.assets.car.src = 'car.png';
+        this.assets.car.src = 'car37.png';
     }
 
     _initCarPosition() {
@@ -94,18 +94,26 @@ export class SimulatorManager {
 
     _resizeCanvas() {
         const container = this.canvas.parentElement;
+        if (!container) return;
+        
         this.canvas.width = container.clientWidth;
         this.canvas.height = container.clientHeight || 500; // Fallback if 0
+        
         // Re-center car if needed
         if (this.state.x === 0) this._initCarPosition();
-        
-        // Setup Collision Canvas
+
+        // Setup/Resize Collision Canvas to stay in sync
         if (this.assets.map.complete && this.assets.map.naturalWidth > 0) {
-            this.colCanvas = document.createElement('canvas');
+            if (!this.colCanvas) {
+                this.colCanvas = document.createElement('canvas');
+            }
             this.colCanvas.width = this.canvas.width;
             this.colCanvas.height = this.canvas.height;
             this.colCtx = this.colCanvas.getContext('2d', { willReadFrequently: true });
+            
+            // CRITICAL: Always redraw the map on the collision canvas after resizing
             this.colCtx.drawImage(this.assets.map, 0, 0, this.canvas.width, this.canvas.height);
+            console.log("Collision canvas synchronized:", this.canvas.width, "x", this.canvas.height);
         }
     }
 
@@ -145,7 +153,7 @@ export class SimulatorManager {
 
     _updateEngineUI() {
         if (!this.btnToggleEngine) return;
-        
+
         if (this.state.isEngineRunning) {
             this.btnToggleEngine.innerHTML = `<span class="material-symbols-outlined">power_settings_new</span> Vypnout motor`;
             this.btnToggleEngine.classList.replace('bg-primary', 'bg-error');
@@ -159,23 +167,23 @@ export class SimulatorManager {
 
     _handleKey(e, isPressed) {
         const val = isPressed ? 1 : 0;
-        switch(e.key.toLowerCase()) {
+        switch (e.key.toLowerCase()) {
             case 'a': this.inputs.clutch = val; this._updatePedalUI('pedal-clutch', isPressed); break;
             case 's': this.inputs.brake = val; this._updatePedalUI('pedal-brake', isPressed); break;
             case 'd': this.inputs.gas = val; this._updatePedalUI('pedal-gas', isPressed); break;
             case 'arrowleft': this.inputs.steering = isPressed ? -1 : 0; break;
             case 'arrowright': this.inputs.steering = isPressed ? 1 : 0; break;
-            case '1': 
-                if(isPressed) {
+            case '1':
+                if (isPressed) {
                     this.state.gear = 1;
-                    if(this.uiGear) this.uiGear.innerText = '1';
+                    if (this.uiGear) this.uiGear.innerText = '1';
                 }
                 break;
             case '0':
             case 'n':
-                if(isPressed) {
+                if (isPressed) {
                     this.state.gear = 0;
-                    if(this.uiGear) this.uiGear.innerText = 'N';
+                    if (this.uiGear) this.uiGear.innerText = 'N';
                 }
                 break;
         }
@@ -197,8 +205,8 @@ export class SimulatorManager {
         };
 
         el.addEventListener('mousedown', press);
-        el.addEventListener('touchstart', press, {passive: false});
-        
+        el.addEventListener('touchstart', press, { passive: false });
+
         window.addEventListener('mouseup', release);
         window.addEventListener('touchend', release);
     }
@@ -238,10 +246,10 @@ export class SimulatorManager {
 
     _loop() {
         if (!this.isRunning) return;
-        
+
         this._updatePhysics();
         this._render();
-        
+
         this.animationFrameId = requestAnimationFrame(() => this._loop());
     }
 
@@ -262,10 +270,10 @@ export class SimulatorManager {
                 // 1st Gear Stalling Logic
                 // If clutch is up (0) and speed is very low and gas is low, stall!
                 // To prevent stall, clutch must be down (1), OR speed must be high enough, OR gas applied.
-                
+
                 // RPM depends on gas and wheel speed if clutch is up
                 const targetRpm = Math.max(800, this.state.speed * 100 + (this.inputs.gas * 2000));
-                
+
                 if (this.inputs.clutch === 1) {
                     // Clutch fully disengaged (pedal down)
                     if (this.inputs.gas > 0) {
@@ -282,7 +290,7 @@ export class SimulatorManager {
                     if (this.state.rpm < 500 && this.state.speed < 5) {
                         this._stopEngine();
                         this.state.rpm = 0;
-                        if(this.uiRpm) this.uiRpm.innerText = "MOTOR CHCÍPL";
+                        if (this.uiRpm) this.uiRpm.innerText = "MOTOR CHCÍPL";
                     }
 
                     // Acceleration force
@@ -305,18 +313,18 @@ export class SimulatorManager {
         // Collision Detection (Alpha)
         let offRoadFriction = 0;
         let isSolidCollision = false;
-        
+
         if (this.colCtx && this.state.x >= 0 && this.state.x < this.canvas.width && this.state.y >= 0 && this.state.y < this.canvas.height) {
             const pixel = this.colCtx.getImageData(this.state.x, this.state.y, 1, 1).data;
             const r = pixel[0], g = pixel[1], b = pixel[2];
-            
+
             // Check pixel color logic
             // Gray/White -> Asphalt/Lines (allow driving)
             // Green -> Grass (high friction)
             // Blue/Other -> Building/Obstacle (solid)
             const isGrayish = Math.abs(r - g) < 30 && Math.abs(g - b) < 30 && Math.abs(r - b) < 30;
             const isGreenish = g > r + 15 && g > b + 15;
-            
+
             if (isGreenish) {
                 offRoadFriction = 0.8; // High friction for grass
             } else if (!isGrayish && !isGreenish) {
@@ -333,7 +341,7 @@ export class SimulatorManager {
             if (this.state.isEngineRunning) {
                 this._stopEngine();
                 this.state.rpm = 0;
-                if(this.uiRpm) this.uiRpm.innerText = "MOTOR CHCÍPL (NÁRAZ)";
+                if (this.uiRpm) this.uiRpm.innerText = "MOTOR CHCÍPL (NÁRAZ)";
             }
         }
 
@@ -375,7 +383,7 @@ export class SimulatorManager {
 
     _render() {
         const { width, height } = this.canvas;
-        
+
         // Clear canvas
         this.ctx.fillStyle = '#2a2a2a';
         this.ctx.fillRect(0, 0, width, height);
@@ -387,8 +395,8 @@ export class SimulatorManager {
         } else {
             // Fallback grid
             this.ctx.strokeStyle = '#444';
-            for(let i=0; i<width; i+=50) {
-                this.ctx.beginPath(); this.ctx.moveTo(i,0); this.ctx.lineTo(i,height); this.ctx.stroke();
+            for (let i = 0; i < width; i += 50) {
+                this.ctx.beginPath(); this.ctx.moveTo(i, 0); this.ctx.lineTo(i, height); this.ctx.stroke();
             }
         }
 
@@ -405,25 +413,26 @@ export class SimulatorManager {
         this.ctx.font = 'bold 24px Fira Sans';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        this.ctx.fillText("P", this.targetZone.x + this.targetZone.w/2, this.targetZone.y + this.targetZone.h/2);
+        this.ctx.fillText("P", this.targetZone.x + this.targetZone.w / 2, this.targetZone.y + this.targetZone.h / 2);
         this.ctx.restore();
 
         // Car
         this.ctx.save();
         this.ctx.translate(this.state.x, this.state.y);
-        this.ctx.rotate(this.state.angle + Math.PI/2); // Adjust sprite orientation
-        
+        this.ctx.rotate(this.state.angle + Math.PI / 2); // Adjust sprite orientation
+
         if (this.assets.car.complete && this.assets.car.naturalWidth > 0) {
-            // Render car sprite scaled down
-            const carW = 40;
-            const carH = 80;
-            this.ctx.drawImage(this.assets.car, -carW/2, -carH/2, carW, carH);
+            // Render car sprite with correct proportions
+            const carWidth = 40;
+            const aspectRatio = this.assets.car.naturalHeight / this.assets.car.naturalWidth;
+            const carHeight = carWidth * aspectRatio;
+            this.ctx.drawImage(this.assets.car, -carWidth / 2, -carHeight / 2, carWidth, carHeight);
         } else {
             // Fallback Red Rectangle
             this.ctx.fillStyle = 'red';
             this.ctx.fillRect(-15, -30, 30, 60);
         }
-        
+
         this.ctx.restore();
 
         // Overlay status if stalled
@@ -433,9 +442,9 @@ export class SimulatorManager {
             this.ctx.fillStyle = 'white';
             this.ctx.font = '24px Fira Sans';
             this.ctx.textAlign = 'center';
-            this.ctx.fillText("MOTOR VYPNUTÝ - Stiskněte 'Nastartovat'", width/2, height/2);
+            this.ctx.fillText("MOTOR VYPNUTÝ - Stiskněte 'Nastartovat'", width / 2, height / 2);
             this.ctx.font = '16px Fira Sans';
-            this.ctx.fillText("Stiskněte '1' pro zařazení 1. rychlostního stupně.", width/2, height/2 + 30);
+            this.ctx.fillText("Stiskněte '1' pro zařazení 1. rychlostního stupně.", width / 2, height / 2 + 30);
         }
 
         // Draw Mission Text Overlay
@@ -456,7 +465,7 @@ export class SimulatorManager {
         this.ctx.font = '12px Fira Sans';
         this.ctx.textAlign = 'left';
         this.ctx.textBaseline = 'middle';
-        
+
         // Steering
         this.ctx.fillStyle = 'white';
         this.ctx.fillText("Volant:", padX + 10, padY + 20);
@@ -488,7 +497,7 @@ export class SimulatorManager {
         this.ctx.fillRect(padX + 60, padY + 75, 80, 10);
         this.ctx.fillStyle = '#0f0';
         this.ctx.fillRect(padX + 60, padY + 75, this.inputs.gas * 80, 10);
-        
+
         // Objective Complete Overlay
         if (this.state.objectiveComplete) {
             this.ctx.fillStyle = 'rgba(30, 142, 62, 0.8)'; // Success green
@@ -496,9 +505,9 @@ export class SimulatorManager {
             this.ctx.fillStyle = 'white';
             this.ctx.font = 'bold 36px Fira Sans';
             this.ctx.textAlign = 'center';
-            this.ctx.fillText("Mise splněna!", width/2, height/2);
+            this.ctx.fillText("Mise splněna!", width / 2, height / 2);
             this.ctx.font = '20px Fira Sans';
-            this.ctx.fillText("Úspěšně jste zaparkovali vozidlo.", width/2, height/2 + 40);
+            this.ctx.fillText("Úspěšně jste zaparkovali vozidlo.", width / 2, height / 2 + 40);
         }
     }
 }

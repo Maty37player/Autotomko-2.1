@@ -20,11 +20,16 @@ export class QuizEngine {
      */
     async loadQuestions() {
         try {
-            const response = await fetch('questions.json');
+            const response = await fetch('./questions.json');
             if (!response.ok) {
                 throw new Error(`Failed to fetch questions.json: ${response.status}`);
             }
             this.allQuestions = await response.json();
+            
+            if (!this.allQuestions || this.allQuestions.length === 0) {
+                console.error("QuizEngine Error: questions.json loaded but the questions array is empty.");
+            }
+
             this._processCategories();
         } catch (error) {
             console.error("QuizEngine Error:", error);

@@ -14,6 +14,7 @@ class App {
         this.lastExamSession = null;
         this.examTimerInterval = null;
 
+        this.currentView = 'welcome';
         this.init();
     }
 
@@ -25,9 +26,13 @@ class App {
 
         try {
             await this.quizEngine.loadQuestions();
-            // Optional: you can show a success toast or just enable features
+            // Re-render categories if we are already in the learning view
+            if (this.currentView === 'learning') {
+                this._initLearningView();
+            }
         } catch (error) {
-            alert("Chyba při načítání otázek. Zkontrolujte připojení k internetu a zkuste to znovu.");
+            console.error("Initialization Error:", error);
+            alert("Chyba při načítání otázek. Zkontrolujte soubor questions.json.");
         }
     }
 
@@ -99,6 +104,7 @@ class App {
     }
 
     navigate(viewId) {
+        this.currentView = viewId;
         this.uiManager.switchView(viewId);
 
         // Handle specific logic for views
