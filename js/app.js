@@ -6,7 +6,7 @@ class App {
     constructor() {
         this.quizEngine = new QuizEngine();
         this.uiManager = new UIManager();
-        this.simulatorManager = new SimulatorManager();
+        this.simulatorManager = new SimulatorManager(this.uiManager);
 
         // State
         this.currentStudySession = null;
@@ -63,10 +63,15 @@ class App {
             });
         }
 
-        // Brand logo
         const navBrand = document.getElementById('nav-brand');
         if (navBrand) {
             navBrand.addEventListener('click', () => this.navigate('welcome'));
+        }
+
+        // Simulator Specific Buttons
+        const btnToggleWheel = document.getElementById('btn-toggle-wheel');
+        if (btnToggleWheel) {
+            btnToggleWheel.addEventListener('click', () => this.uiManager.toggleSteeringWheel());
         }
 
         // Learning Mode Navigation

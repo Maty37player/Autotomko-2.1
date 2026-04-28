@@ -1,5 +1,6 @@
 export class SimulatorManager {
-    constructor() {
+    constructor(uiManager) {
+        this.uiManager = uiManager;
         this.canvas = document.getElementById('simulator-canvas');
         if (!this.canvas) return;
         this.ctx = this.canvas.getContext('2d');
@@ -12,25 +13,36 @@ export class SimulatorManager {
 
         // Input State
         this.inputs = {
-            gas: 0,      // 0 to 1
-            brake: 0,    // 0 to 1
-            clutch: 0,   // 0 to 1
-            steering: 0  // -1 (left) to 1 (right)
+            gas: 0,
+            brake: 0,
+            clutch: 0,
+            steering: 0,  // -1 (left) to 1 (right)
+            ignition: false
         };
 
-        // Advanced Physics State
+        // Realistic Engine States
+        this.ENGINE_STATES = {
+            OFF: 'OFF',
+            KEY_INSERTED: 'KEY_INSERTED',
+            STARTING: 'STARTING',
+            RUNNING: 'RUNNING',
+            STALLED: 'STALLED'
+        };
+
         this.state = {
-            isEngineRunning: false,
+            engineState: this.ENGINE_STATES.OFF,
+            ignitionTimer: 0,
             speed: 0,
             rpm: 0,
             gear: 0, // 0 = Neutral, 1 = First Gear
-
+            
             // Car position
             x: 0,
             y: 0,
             angle: 0,
             acceleration: 0,
-            objectiveComplete: false
+            objectiveComplete: false,
+            shakeTimer: 0 // For stalling effect
         };
 
         this.targetZone = { x: 150, y: 150, w: 60, h: 100 }; // Parking spot
@@ -149,39 +161,46 @@ export class SimulatorManager {
     }
 
     _startEngine() {
-        this.state.isEngineRunning = true;
+        this.state.engineState = this.ENGINE_STATES.RUNNING;
         this.state.rpm = 800; // Idle RPM
         this._updateEngineUI();
     }
 
-    _stopEngine() {
-        this.state.isEngineRunning = false;
+    _stopEngine(stalled = false) {
+        this.state.engineState = stalled ? this.ENGINE_STATES.STALLED : this.ENGINE_STATES.OFF;
         this.state.rpm = 0;
+        if (stalled) this.state.shakeTimer = 0.5; // Shake for 0.5s
         this._updateEngineUI();
     }
 
     _updateEngineUI() {
         if (!this.btnToggleEngine) return;
 
-        if (this.state.isEngineRunning) {
+        const isRunning = this.state.engineState === this.ENGINE_STATES.RUNNING;
+
+        if (isRunning) {
             this.btnToggleEngine.innerHTML = `<span class="material-symbols-outlined">power_settings_new</span> Vypnout motor`;
             this.btnToggleEngine.classList.replace('bg-primary', 'bg-error');
         } else {
             this.btnToggleEngine.innerHTML = `<span class="material-symbols-outlined">power_settings_new</span> Nastartovat`;
             this.btnToggleEngine.classList.replace('bg-error', 'bg-primary');
-            // If it stalled
-            if (this.state.rpm > 0) this.uiRpm.innerText = `MOTOR CHCÍPL`;
         }
     }
 
     _handleKey(e, isPressed) {
         const val = isPressed ? 1 : 0;
-        switch (e.key.toLowerCase()) {
-            case 'a': this.inputs.clutch = val; this._updatePedalUI('pedal-clutch', isPressed); break;
+        const key = e.key.toLowerCase();
+
+        switch (key) {
+            case 'w': this.inputs.gas = val; this._updatePedalUI('pedal-gas', isPressed); break;
             case 's': this.inputs.brake = val; this._updatePedalUI('pedal-brake', isPressed); break;
-            case 'd': this.inputs.gas = val; this._updatePedalUI('pedal-gas', isPressed); break;
-            case 'arrowleft': this.inputs.steering = isPressed ? -1 : 0; break;
-            case 'arrowright': this.inputs.steering = isPressed ? 1 : 0; break;
+            case 'shift': this.inputs.clutch = val; this._updatePedalUI('pedal-clutch', isPressed); break;
+            case 'a': this.inputs.steering = isPressed ? -1 : (this.inputs.steering === -1 ? 0 : this.inputs.steering); break;
+            case 'd': this.inputs.steering = isPressed ? 1 : (this.inputs.steering === 1 ? 0 : this.inputs.steering); break;
+            case 'e': 
+                this.inputs.ignition = isPressed;
+                this._handleIgnition(isPressed); 
+                break;
             case '1':
                 if (isPressed) {
                     this.state.gear = 1;
@@ -196,6 +215,34 @@ export class SimulatorManager {
                 }
                 break;
         }
+    }
+
+    _handleIgnition(isPressed) {
+        if (!isPressed) {
+            // Key released
+            if (this.state.engineState === this.ENGINE_STATES.STARTING) {
+                this.state.engineState = this.ENGINE_STATES.KEY_INSERTED;
+                this.state.rpm = 0;
+            }
+            this.state.ignitionTimer = 0;
+            return;
+        }
+
+        // Key pressed
+        if (this.state.engineState === this.ENGINE_STATES.OFF) {
+            this.state.engineState = this.ENGINE_STATES.KEY_INSERTED;
+        } else if (this.state.engineState === this.ENGINE_STATES.RUNNING) {
+            this.state.engineState = this.ENGINE_STATES.OFF;
+            this.state.rpm = 0;
+        } else if (this.state.engineState === this.ENGINE_STATES.STALLED) {
+            this.state.engineState = this.ENGINE_STATES.KEY_INSERTED;
+        }
+    }
+
+    _updateIgnition(dt) {
+        // Holding 'E' logic
+        const isHoldingE = this.inputs.ignitionTimer > 0 || (window.event && window.event.key === 'e'); 
+        // Note: Simple keyboard state tracking is better. I'll use a local input flag.
     }
 
     _bindPedalTouch(elementId, inputKey) {
@@ -264,9 +311,13 @@ export class SimulatorManager {
 
     _updatePhysics() {
         const dt = 0.016; // Approx 60fps
+        const isRunning = this.state.engineState === this.ENGINE_STATES.RUNNING;
 
-        if (this.state.isEngineRunning) {
-            // Engine logic
+        // --- Engine State & Ignition Logic ---
+        this._updateEngineStateMachine(dt);
+
+        // --- Engine Physics ---
+        if (isRunning) {
             if (this.state.gear === 0) {
                 // Neutral
                 if (this.inputs.gas > 0) {
@@ -276,10 +327,6 @@ export class SimulatorManager {
                 }
                 this.state.acceleration = 0;
             } else if (this.state.gear === 1) {
-                // 1st Gear Stalling Logic
-                // If clutch is up (0) and speed is very low and gas is low, stall!
-                // To prevent stall, clutch must be down (1), OR speed must be high enough, OR gas applied.
-
                 // RPM depends on gas and wheel speed if clutch is up
                 const targetRpm = Math.max(800, this.state.speed * 100 + (this.inputs.gas * 2000));
 
@@ -295,76 +342,47 @@ export class SimulatorManager {
                     // Clutch engaged (pedal up)
                     this.state.rpm += (targetRpm - this.state.rpm) * 0.1;
 
-                    // Stalling Check
+                    // REALISTIC STALLING: If clutch released without enough speed/gas
+                    if (this.inputs.clutch < 0.2 && this.state.speed < 10 && this.inputs.gas < 0.1) {
+                        this._stopEngine(true); // Stalled
+                        return;
+                    }
+
+                    // Normal Stalling Check
                     if (this.state.rpm < 500 && this.state.speed < 5) {
-                        this._stopEngine();
-                        this.state.rpm = 0;
-                        if (this.uiRpm) this.uiRpm.innerText = "MOTOR CHCÍPL";
+                        this._stopEngine(true);
+                        return;
                     }
 
                     // Acceleration force
-                    if (this.state.isEngineRunning) {
-                        this.state.acceleration = (this.state.rpm / 6000) * 10 * this.inputs.gas;
-                    }
+                    this.state.acceleration = (this.state.rpm / 6000) * 12 * this.inputs.gas;
                 }
             }
         } else {
-            // Engine Off
-            this.state.rpm = 0;
+            // Engine Off/Starting/Stalled
+            if (this.state.engineState !== this.ENGINE_STATES.STARTING) {
+                this.state.rpm = 0;
+            }
             this.state.acceleration = 0;
         }
 
         // Apply brake
         if (this.inputs.brake > 0) {
-            this.state.acceleration -= 20 * this.inputs.brake;
+            this.state.acceleration -= 25 * this.inputs.brake;
         }
 
-        // Collision Detection (Alpha)
-        let offRoadFriction = 0;
-        let isSolidCollision = false;
-
-        if (this.colCtx && this.state.x >= 0 && this.state.x < this.canvas.width && this.state.y >= 0 && this.state.y < this.canvas.height) {
-            const pixel = this.colCtx.getImageData(this.state.x, this.state.y, 1, 1).data;
-            const r = pixel[0], g = pixel[1], b = pixel[2];
-
-            // Check pixel color logic
-            // Gray/White -> Asphalt/Lines (allow driving)
-            // Green -> Grass (high friction)
-            // Blue/Other -> Building/Obstacle (solid)
-            const isGrayish = Math.abs(r - g) < 30 && Math.abs(g - b) < 30 && Math.abs(r - b) < 30;
-            const isGreenish = g > r + 15 && g > b + 15;
-
-            if (isGreenish) {
-                offRoadFriction = 0.8; // High friction for grass
-            } else if (!isGrayish && !isGreenish) {
-                isSolidCollision = true; // Blue or other vibrant color
-            }
-        } else {
-            // Out of bounds
-            isSolidCollision = true;
-        }
-
-        if (isSolidCollision) {
-            this.state.speed = 0;
-            this.state.acceleration = 0;
-            if (this.state.isEngineRunning) {
-                this._stopEngine();
-                this.state.rpm = 0;
-                if (this.uiRpm) this.uiRpm.innerText = "MOTOR CHCÍPL (NÁRAZ)";
-            }
-        }
+        // --- Collision Detection ---
+        this._handleCollisions();
 
         // Friction and drag
-        this.state.acceleration -= this.state.speed * (0.1 + offRoadFriction); // drag
+        this.state.acceleration -= this.state.speed * 0.15; 
 
         // Update Speed
         this.state.speed += this.state.acceleration * dt;
-        if (this.state.speed < 0) this.state.speed = 0; // No reverse for now
+        if (this.state.speed < 0) this.state.speed = 0;
 
         // Update Car Position
-        if (this.state.speed > 0 && !isSolidCollision) {
-            // Steering improvements: turn radius depends on speed
-            // At low speeds (e.g. 5 km/h), turn sharply. At high speeds (e.g. 50 km/h), gradual turn.
+        if (this.state.speed > 0) {
             const turnFactor = Math.max(0.005, 0.12 - (this.state.speed * 0.002));
             const turnRate = (this.inputs.steering * this.state.speed * turnFactor) * dt;
             this.state.angle += turnRate;
@@ -373,20 +391,78 @@ export class SimulatorManager {
             this.state.y += Math.sin(this.state.angle) * this.state.speed * dt * 10;
         }
 
-        // Objective Check (Parking)
-        if (!this.state.objectiveComplete && !this.state.isEngineRunning && this.state.speed < 1) {
-            if (this.state.x >= this.targetZone.x && this.state.x <= this.targetZone.x + this.targetZone.w &&
-                this.state.y >= this.targetZone.y && this.state.y <= this.targetZone.y + this.targetZone.h) {
-                this.state.objectiveComplete = true;
+        // --- UI & Tutorial Instructions ---
+        this._updateTutorialUI();
+    }
+
+    _updateEngineStateMachine(dt) {
+        if (this.state.engineState === this.ENGINE_STATES.KEY_INSERTED && this.inputs.ignition) {
+            this.state.engineState = this.ENGINE_STATES.STARTING;
+            this.state.ignitionTimer = 0;
+        }
+
+        if (this.state.engineState === this.ENGINE_STATES.STARTING) {
+            this.state.ignitionTimer += dt;
+            this.state.rpm = 400 + Math.random() * 200; // Cranking sound/visual
+
+            if (this.state.ignitionTimer >= 1.5) {
+                if (this.state.gear === 0 || this.inputs.clutch > 0.8) {
+                    this._startEngine();
+                } else {
+                    this._stopEngine(true); // Stalled (tried to start in gear without clutch)
+                }
+            }
+        }
+    }
+
+    _updateTutorialUI() {
+        if (!this.uiManager) return;
+
+        let msg = "";
+        const s = this.state;
+
+        if (s.engineState === this.ENGINE_STATES.OFF) msg = "Stiskni 'E' pro vložení klíčku.";
+        else if (s.engineState === this.ENGINE_STATES.KEY_INSERTED) msg = "Podrž 'E' pro nastartování.";
+        else if (s.engineState === this.ENGINE_STATES.STARTING) msg = "Startování...";
+        else if (s.engineState === this.ENGINE_STATES.STALLED) msg = "CHCIÍPLO TO! (Zkus to znovu)";
+        else if (s.engineState === this.ENGINE_STATES.RUNNING) {
+            if (s.speed === 0) {
+                if (this.inputs.clutch < 0.8) msg = "Sešlápni spojku (Shift) a zařaď 1.";
+                else if (s.gear !== 1) msg = "Zařaď 1. rychlostní stupeň.";
+                else msg = "Pomalu pouštěj spojku a přidávej plyn (W) pro rozjezd.";
+            } else {
+                msg = "Skvělá práce! Pokračuj v jízdě.";
             }
         }
 
-        // Update UI Text
+        this.uiManager.updateSimInstruction(msg);
+        this.uiManager.rotateSteeringWheel(this.inputs.steering * 0.5);
+
+        // Update Gauges
         if (this.uiSpeed) this.uiSpeed.innerText = `${Math.floor(this.state.speed)} km/h`;
-        if (this.uiRpm && this.state.isEngineRunning) {
-            this.uiRpm.innerText = `${Math.floor(this.state.rpm)} RPM`;
-        } else if (this.uiRpm && !this.state.isEngineRunning && this.state.rpm === 0) {
-            this.uiRpm.innerText = `OFF`;
+        if (this.uiRpm) {
+            if (s.engineState === this.ENGINE_STATES.RUNNING) this.uiRpm.innerText = `${Math.floor(this.state.rpm)} RPM`;
+            else if (s.engineState === this.ENGINE_STATES.STALLED) this.uiRpm.innerText = "MOTOR CHCÍPL";
+            else this.uiRpm.innerText = "OFF";
+        }
+    }
+
+    _handleCollisions() {
+        if (!this.colCtx) return;
+        
+        if (this.state.x >= 0 && this.state.x < this.canvas.width && this.state.y >= 0 && this.state.y < this.canvas.height) {
+            const pixel = this.colCtx.getImageData(this.state.x, this.state.y, 1, 1).data;
+            const r = pixel[0], g = pixel[1], b = pixel[2];
+            const isGrayish = Math.abs(r - g) < 30 && Math.abs(g - b) < 30;
+            const isGreenish = g > r + 15 && g > b + 15;
+
+            if (!isGrayish && !isGreenish) {
+                this.state.speed = 0;
+                this.state.acceleration = 0;
+                if (this.state.engineState === this.ENGINE_STATES.RUNNING) {
+                    this._stopEngine(true);
+                }
+            }
         }
     }
 
@@ -395,9 +471,20 @@ export class SimulatorManager {
 
         // Clear canvas
         this.ctx.fillStyle = '#2a2a2a';
-        this.ctx.fillRect(0, 0, width, height);
+        this.ctx.clearRect(0, 0, width, height);
 
-        // Map
+        // --- Shake Effect ---
+        this.ctx.save();
+        if (this.state.shakeTimer > 0) {
+            const intensity = 5 * (this.state.shakeTimer / 0.5);
+            this.ctx.translate(
+                (Math.random() - 0.5) * intensity,
+                (Math.random() - 0.5) * intensity
+            );
+            this.state.shakeTimer -= 0.016;
+        }
+
+        // --- Render Background (Map) ---
         if (this.assets.map.complete && this.assets.map.naturalWidth > 0) {
             // Draw map covering the canvas (or tiling, or just centered)
             this.ctx.drawImage(this.assets.map, 0, 0, width, height);
@@ -425,14 +512,14 @@ export class SimulatorManager {
         this.ctx.fillText("P", this.targetZone.x + this.targetZone.w / 2, this.targetZone.y + this.targetZone.h / 2);
         this.ctx.restore();
 
-        // Car
+        // Draw Car
         this.ctx.save();
         this.ctx.translate(this.state.x, this.state.y);
         this.ctx.rotate(this.state.angle + Math.PI / 2); // Adjust sprite orientation
 
+        const carWidth = 40;
         if (this.assets.car.complete && this.assets.car.naturalWidth > 0) {
             // Render car sprite with correct proportions
-            const carWidth = 40;
             const aspectRatio = this.assets.car.naturalHeight / this.assets.car.naturalWidth;
             const carHeight = carWidth * aspectRatio;
             this.ctx.drawImage(this.assets.car, -carWidth / 2, -carHeight / 2, carWidth, carHeight);
@@ -444,16 +531,11 @@ export class SimulatorManager {
 
         this.ctx.restore();
 
-        // Overlay status if stalled
-        if (!this.state.isEngineRunning && this.state.rpm === 0 && this.state.speed < 1 && !this.state.objectiveComplete) {
-            this.ctx.fillStyle = 'rgba(0,0,0,0.5)';
-            this.ctx.fillRect(0, 0, width, height);
-            this.ctx.fillStyle = 'white';
-            this.ctx.font = '24px Fira Sans';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText("MOTOR VYPNUTÝ - Stiskněte 'Nastartovat'", width / 2, height / 2);
-            this.ctx.font = '16px Fira Sans';
-            this.ctx.fillText("Stiskněte '1' pro zařazení 1. rychlostního stupně.", width / 2, height / 2 + 30);
+        this.ctx.restore(); // Restore shake effect save
+
+        // Overlay status if stalled (LEGACY - Replaced by instruction overlay)
+        if (this.state.engineState === this.ENGINE_STATES.OFF && this.state.speed < 1 && !this.state.objectiveComplete) {
+            // We keep it clean now with the new overlay
         }
 
         // Draw Mission Text Overlay

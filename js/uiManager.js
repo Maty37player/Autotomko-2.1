@@ -34,10 +34,15 @@ export class UIManager {
         this.examAnswersContainer = document.getElementById('exam-answers-container');
         this.examNavGrid = document.getElementById('exam-nav-grid');
         
-        // Exam Result Elements
         this.examResultIcon = document.getElementById('exam-result-icon');
         this.examResultStatus = document.getElementById('exam-result-status');
         this.examResultScore = document.getElementById('exam-result-score');
+
+        // Simulator Tutorial Elements
+        this.simInstructionText = document.getElementById('sim-instruction-text');
+        this.simInstructionOverlay = document.getElementById('sim-instruction-overlay');
+        this.steeringWheelContainer = document.getElementById('steering-wheel-container');
+        this.visualSteeringWheel = document.getElementById('visual-steering-wheel');
     }
 
     /**
@@ -522,5 +527,40 @@ export class UIManager {
             this.examResultIcon.className = "w-24 h-24 rounded-full flex items-center justify-center mb-md text-6xl text-white shadow-lg bg-error";
             this.examResultIcon.innerHTML = `<span class="material-symbols-outlined text-[64px]">cancel</span>`;
         }
+    }
+
+    /**
+     * Updates the simulator tutorial instruction text.
+     */
+    updateSimInstruction(text) {
+        if (!this.simInstructionText) return;
+        if (this.simInstructionText.innerText === text) return;
+
+        this.simInstructionOverlay.classList.remove('scale-100', 'opacity-100');
+        this.simInstructionOverlay.classList.add('scale-95', 'opacity-0');
+
+        setTimeout(() => {
+            this.simInstructionText.innerText = text;
+            this.simInstructionOverlay.classList.remove('scale-95', 'opacity-0');
+            this.simInstructionOverlay.classList.add('scale-100', 'opacity-100');
+        }, 150);
+    }
+
+    /**
+     * Toggles the visual steering wheel visibility.
+     */
+    toggleSteeringWheel() {
+        if (!this.steeringWheelContainer) return;
+        this.steeringWheelContainer.classList.toggle('hidden');
+    }
+
+    /**
+     * Rotates the visual steering wheel.
+     * @param {number} angle In radians
+     */
+    rotateSteeringWheel(angle) {
+        if (!this.visualSteeringWheel) return;
+        const degrees = angle * (180 / Math.PI) * 2; // Multiply for visual impact
+        this.visualSteeringWheel.style.transform = `rotate(${degrees}deg)`;
     }
 }
