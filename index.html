@@ -111,30 +111,30 @@
     </style>
 </head>
 
-<body class="bg-[#f0f4f8] text-on-background min-h-screen flex flex-col font-body-md antialiased pt-16">
+<body class="bg-[#f0f4f8] text-on-background min-h-screen flex flex-col font-body-md antialiased pt-24 md:pt-16">
 
     <!-- TopAppBar -->
     <header
         class="bg-white dark:bg-slate-900 font-sans antialiased text-slate-900 dark:text-slate-100 fixed top-0 w-full z-50 border-b border-slate-200 dark:border-slate-800 shadow-sm">
-        <div class="max-w-[1280px] mx-auto flex justify-between items-center px-6 h-16">
-            <div class="text-xl font-bold text-blue-600 dark:text-blue-400 cursor-pointer" id="nav-brand">
+        <div class="max-w-[1280px] mx-auto flex flex-col md:flex-row justify-between items-center px-4 md:px-6 py-2 md:py-0 md:h-16 gap-2 md:gap-0">
+            <div class="text-xl font-bold text-blue-600 dark:text-blue-400 cursor-pointer self-start md:self-auto" id="nav-brand">
                 AutoTomko
             </div>
-            <nav class="hidden md:flex space-x-6">
+            <nav class="flex space-x-2 sm:space-x-4 md:space-x-6 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 [&::-webkit-scrollbar]:hidden" style="scrollbar-width: none; -ms-overflow-style: none;">
                 <button data-view="welcome"
-                    class="nav-tab text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-1 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200">
+                    class="nav-tab whitespace-nowrap text-sm sm:text-base text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-1 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200">
                     Vítejte
                 </button>
                 <button data-view="learning"
-                    class="nav-tab text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 px-3 py-2 rounded">
+                    class="nav-tab whitespace-nowrap text-sm sm:text-base text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 px-2 sm:px-3 py-1 sm:py-2 rounded">
                     Učení
                 </button>
                 <button data-view="exam"
-                    class="nav-tab text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 px-3 py-2 rounded">
+                    class="nav-tab whitespace-nowrap text-sm sm:text-base text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 px-2 sm:px-3 py-1 sm:py-2 rounded">
                     Zkušební test
                 </button>
                 <button data-view="simulation"
-                    class="nav-tab text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 px-3 py-2 rounded">
+                    class="nav-tab whitespace-nowrap text-sm sm:text-base text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 px-2 sm:px-3 py-1 sm:py-2 rounded">
                     Simulace
                 </button>
             </nav>
@@ -360,13 +360,14 @@
             </div>
 
             <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm mb-lg">
-                <div class="flex justify-between items-center mb-md">
-                    <div class="flex gap-md font-body-lg text-on-surface-variant">
+                <div class="flex flex-wrap justify-between items-center mb-md gap-y-3">
+                    <div class="flex flex-wrap gap-md font-body-lg text-on-surface-variant w-full md:w-auto mb-2 md:mb-0">
                         <div>Rychlost: <span id="sim-speed" class="font-bold text-primary">0 km/h</span></div>
                         <div>Motor: <span id="sim-rpm" class="font-bold text-primary">0 RPM</span></div>
                         <div>Zařazeno: <span id="sim-gear" class="font-bold text-primary">N</span></div>
                     </div>
-                        <div class="flex items-center gap-1 bg-surface-container rounded-lg p-1 mr-md">
+                    <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                        <div class="flex items-center gap-1 bg-surface-container rounded-lg p-1">
                             <button id="btn-mode-easy" class="px-3 py-1 rounded-md bg-primary text-on-primary font-bold shadow-sm transition-colors text-sm">Snadný</button>
                             <button id="btn-mode-hard" class="px-3 py-1 rounded-md text-on-surface-variant hover:bg-surface-container-high font-bold transition-colors text-sm">Realistický</button>
                         </div>
@@ -382,6 +383,7 @@
                             class="font-button bg-surface-container text-on-surface-variant px-md py-sm rounded flex items-center gap-xs hover:bg-surface-container-high transition-colors">
                             <span class="material-symbols-outlined">settings</span> Nastavení
                         </button>
+                    </div>
                 </div>
 
                 <div class="relative overflow-hidden rounded-lg">
@@ -571,8 +573,8 @@
                 </button>
             </div>
             <div class="flex flex-col items-center text-center gap-md py-lg">
-                <div class="w-20 h-20 bg-primary-container rounded-full flex items-center justify-center mb-md">
-                    <span class="material-symbols-outlined text-primary text-4xl">engineering</span>
+                <div class="w-32 h-32 rounded-full overflow-hidden mb-md shadow-lg border-4 border-primary">
+                    <img src="tomas_barton.jpg" alt="Tomáš Bartoň" class="w-full h-full object-cover">
                 </div>
                 <div class="font-h3 text-h3 text-on-surface">Automechanik Tomáš Bartoň</div>
                 <a href="tel:+420737940968" class="font-body-lg text-primary hover:underline flex items-center gap-sm">
