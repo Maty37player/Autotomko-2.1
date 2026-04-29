@@ -43,6 +43,14 @@ export class UIManager {
         this.simInstructionBanner = document.getElementById('sim-instruction-banner');
         this.simMissionText = document.getElementById('sim-mission-text');
         this.simSuccessOverlay = document.getElementById('sim-success-overlay');
+        this.simFailureOverlay = document.getElementById('sim-failure-overlay');
+        this.btnModeEasy = document.getElementById('btn-mode-easy');
+        this.btnModeHard = document.getElementById('btn-mode-hard');
+        this.simTutorialGuide = document.getElementById('sim-tutorial-guide');
+        this.simControlsSection = document.getElementById('sim-controls-section');
+        this.simEasyInstructions = document.getElementById('sim-easy-instructions');
+        this.simHardInstructions = document.getElementById('sim-hard-instructions');
+
         this.simBarSteering = document.getElementById('sim-bar-steering');
         this.simBarClutch = document.getElementById('sim-bar-clutch');
         this.simBarBrake = document.getElementById('sim-bar-brake');
@@ -686,5 +694,35 @@ export class UIManager {
         if (!this.visualSteeringWheel) return;
         const degrees = angle * (180 / Math.PI) * 2; // Multiply for visual impact
         this.visualSteeringWheel.style.transform = `rotate(${degrees}deg)`;
+    }
+
+    showSimFailure(durationMs = 2000) {
+        if (!this.simFailureOverlay) return;
+        this.simFailureOverlay.classList.remove('hidden');
+        this.simFailureOverlay.classList.add('flex');
+        setTimeout(() => {
+            this.simFailureOverlay.classList.add('hidden');
+            this.simFailureOverlay.classList.remove('flex');
+        }, durationMs);
+    }
+
+    setSimModeUI(mode) {
+        if (!this.btnModeEasy || !this.btnModeHard) return;
+        
+        if (mode === 'EASY') {
+            this.btnModeEasy.className = "px-3 py-1 rounded-md bg-primary text-on-primary font-bold shadow-sm transition-colors text-sm";
+            this.btnModeHard.className = "px-3 py-1 rounded-md text-on-surface-variant hover:bg-surface-container-high font-bold transition-colors text-sm";
+            if (this.simTutorialGuide) this.simTutorialGuide.classList.add('hidden');
+            if (this.simControlsSection) this.simControlsSection.classList.add('hidden');
+            if (this.simEasyInstructions) this.simEasyInstructions.classList.remove('hidden');
+            if (this.simHardInstructions) this.simHardInstructions.classList.add('hidden');
+        } else {
+            this.btnModeHard.className = "px-3 py-1 rounded-md bg-primary text-on-primary font-bold shadow-sm transition-colors text-sm";
+            this.btnModeEasy.className = "px-3 py-1 rounded-md text-on-surface-variant hover:bg-surface-container-high font-bold transition-colors text-sm";
+            if (this.simTutorialGuide) this.simTutorialGuide.classList.remove('hidden');
+            if (this.simControlsSection) this.simControlsSection.classList.remove('hidden');
+            if (this.simEasyInstructions) this.simEasyInstructions.classList.add('hidden');
+            if (this.simHardInstructions) this.simHardInstructions.classList.remove('hidden');
+        }
     }
 }

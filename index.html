@@ -366,7 +366,10 @@
                         <div>Motor: <span id="sim-rpm" class="font-bold text-primary">0 RPM</span></div>
                         <div>Zařazeno: <span id="sim-gear" class="font-bold text-primary">N</span></div>
                     </div>
-                    <div class="flex gap-md">
+                        <div class="flex items-center gap-1 bg-surface-container rounded-lg p-1 mr-md">
+                            <button id="btn-mode-easy" class="px-3 py-1 rounded-md bg-primary text-on-primary font-bold shadow-sm transition-colors text-sm">Snadný</button>
+                            <button id="btn-mode-hard" class="px-3 py-1 rounded-md text-on-surface-variant hover:bg-surface-container-high font-bold transition-colors text-sm">Realistický</button>
+                        </div>
                         <button id="btn-toggle-wheel"
                             class="font-button bg-surface-container text-primary px-md py-sm rounded flex items-center gap-xs hover:bg-surface-container-high transition-colors">
                             <span class="material-symbols-outlined">steering</span> Volant
@@ -379,7 +382,6 @@
                             class="font-button bg-surface-container text-on-surface-variant px-md py-sm rounded flex items-center gap-xs hover:bg-surface-container-high transition-colors">
                             <span class="material-symbols-outlined">settings</span> Nastavení
                         </button>
-                    </div>
                 </div>
 
                 <div class="relative overflow-hidden rounded-lg">
@@ -390,6 +392,13 @@
                         <span class="material-symbols-outlined text-6xl mb-md">verified</span>
                         <h2 class="text-3xl font-bold mb-2">Mise splněna!</h2>
                         <p class="text-xl">Úspěšně jste zaparkovali vozidlo.</p>
+                    </div>
+
+                    <!-- Failure Overlay -->
+                    <div id="sim-failure-overlay" class="absolute inset-0 bg-red-600/90 text-white hidden flex-col items-center justify-center text-center z-20 backdrop-blur-sm">
+                        <span class="material-symbols-outlined text-6xl mb-md">warning</span>
+                        <h2 class="text-3xl font-bold mb-2">Neprošel jsi řídícím testem</h2>
+                        <p class="text-xl">Vyjel jsi mimo trať!</p>
                     </div>
 
                     <!-- Visual Steering Wheel (Floating) -->
@@ -424,7 +433,7 @@
             </div>
 
             <!-- How to Start Guide -->
-            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg mb-lg shadow-sm">
+            <div id="sim-tutorial-guide" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg mb-lg shadow-sm hidden">
                 <h3 class="font-h3 text-h3 text-on-surface mb-md">Jak nastartovat a vyjet</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-5 gap-lg mt-4">
                     <div class="flex flex-col items-center text-center gap-sm">
@@ -450,7 +459,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-lg" id="sim-controls-section">
                 <!-- Controls State Panel -->
                 <div id="sim-controls-panel" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm">
                     <h3 class="font-h3 text-h3 text-on-surface mb-md">Stav ovládání</h3>
@@ -511,8 +520,20 @@
                 </div>
             </div>
 
-            <!-- Steering -->
-            <div class="flex justify-center gap-xl mt-xl">
+            <!-- Steering Instructions -->
+            <div id="sim-easy-instructions" class="flex justify-center gap-xl mt-xl bg-white p-lg rounded-xl border border-outline-variant shadow-sm hidden">
+                <div class="flex items-center gap-md text-on-surface-variant font-body-lg">
+                    <strong class="text-primary">W</strong> Dopředu
+                </div>
+                <div class="flex items-center gap-md text-on-surface-variant font-body-lg">
+                    <strong class="text-primary">S</strong> Brzda / Dozadu
+                </div>
+                <div class="flex items-center gap-md text-on-surface-variant font-body-lg">
+                    <strong class="text-primary">A / D</strong> Zatáčení
+                </div>
+            </div>
+
+            <div id="sim-hard-instructions" class="flex justify-center gap-xl mt-xl">
                 <div class="flex items-center gap-md text-on-surface-variant font-body-md">
                     <span class="material-symbols-outlined">keyboard_arrow_left</span>
                     Zatočit doleva (Šipka vlevo)

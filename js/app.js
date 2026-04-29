@@ -76,6 +76,19 @@ class App {
             btnToggleWheel.addEventListener('click', () => this.uiManager.toggleSteeringWheel());
         }
 
+        const btnModeEasy = document.getElementById('btn-mode-easy');
+        const btnModeHard = document.getElementById('btn-mode-hard');
+        if (btnModeEasy && btnModeHard) {
+            btnModeEasy.addEventListener('click', () => {
+                this.simulatorManager.setMode('EASY');
+                this.uiManager.setSimModeUI('EASY');
+            });
+            btnModeHard.addEventListener('click', () => {
+                this.simulatorManager.setMode('HARD');
+                this.uiManager.setSimModeUI('HARD');
+            });
+        }
+
         // Learning Mode Navigation
         const btnBackCategories = document.getElementById('btn-back-categories');
         if (btnBackCategories) {
@@ -188,6 +201,7 @@ class App {
             this._initExamView();
         } else if (viewId === 'simulation') {
             this.uiManager.syncControlButtons(this.simulatorManager.controls);
+            this.uiManager.setSimModeUI(this.simulatorManager.mode);
             this.simulatorManager.start();
         } else {
             this.simulatorManager.stop();
