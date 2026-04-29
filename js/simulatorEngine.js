@@ -325,12 +325,11 @@ export class SimulatorManager {
         if (!el) return;
 
         const press = (e) => {
-            e.preventDefault();
+            if (e.cancelable) e.preventDefault();
             this.inputs[inputKey] = 1;
             this._updatePedalUI(elementId, true);
         };
         const release = (e) => {
-            e.preventDefault();
             this.inputs[inputKey] = 0;
             this._updatePedalUI(elementId, false);
         };

@@ -83,9 +83,9 @@ export class UIManager {
         // Update nav tabs
         document.querySelectorAll('.nav-tab').forEach(tab => {
             if (tab.dataset.view === viewId) {
-                tab.className = "nav-tab text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-1 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 px-3 py-2 rounded";
+                tab.className = "nav-tab whitespace-nowrap text-sm sm:text-base text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-1 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 px-2 sm:px-3 py-1 sm:py-2 rounded-t";
             } else {
-                tab.className = "nav-tab text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 px-3 py-2 rounded";
+                tab.className = "nav-tab whitespace-nowrap text-sm sm:text-base text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 px-2 sm:px-3 py-1 sm:py-2 rounded";
             }
         });
     }
