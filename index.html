@@ -120,20 +120,20 @@
             <div class="text-xl font-bold text-blue-600 dark:text-blue-400 cursor-pointer self-start md:self-auto" id="nav-brand">
                 AutoTomko
             </div>
-            <nav class="flex space-x-2 sm:space-x-4 md:space-x-6 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 [&::-webkit-scrollbar]:hidden" style="scrollbar-width: none; -ms-overflow-style: none;">
-                <button data-view="welcome"
+            <nav class="flex space-x-2 sm:space-x-4 md:space-x-6 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 [&::-webkit-scrollbar]:hidden" style="scrollbar-width: none; -ms-overflow-style: none; touch-action: pan-x;">
+                <button type="button" data-view="welcome" style="touch-action: manipulation; cursor: pointer;"
                     class="nav-tab whitespace-nowrap text-sm sm:text-base text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-1 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200">
                     Vítejte
                 </button>
-                <button data-view="learning"
+                <button type="button" data-view="learning" style="touch-action: manipulation; cursor: pointer;"
                     class="nav-tab whitespace-nowrap text-sm sm:text-base text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 px-2 sm:px-3 py-1 sm:py-2 rounded">
                     Učení
                 </button>
-                <button data-view="exam"
+                <button type="button" data-view="exam" style="touch-action: manipulation; cursor: pointer;"
                     class="nav-tab whitespace-nowrap text-sm sm:text-base text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 px-2 sm:px-3 py-1 sm:py-2 rounded">
                     Zkušební test
                 </button>
-                <button data-view="simulation"
+                <button type="button" data-view="simulation" style="touch-action: manipulation; cursor: pointer;"
                     class="nav-tab whitespace-nowrap text-sm sm:text-base text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 px-2 sm:px-3 py-1 sm:py-2 rounded">
                     Simulace
                 </button>
@@ -161,28 +161,7 @@
                         vyzkoušejte reálné scénáře a složte závěrečnou zkoušku s naším strukturovaným vzdělávacím
                         plánem.
                     </p>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-md mb-xl">
-                        <div class="flex flex-col items-start p-md bg-surface border border-outline-variant rounded-lg">
-                            <span class="material-symbols-outlined text-primary mb-sm text-3xl">menu_book</span>
-                            <h3 class="font-h3 text-h3 text-on-surface text-lg mb-xs">Učení</h3>
-                            <p class="font-body-md text-body-md text-on-surface-variant text-sm">Strukturované moduly
-                            </p>
-                        </div>
-                        <div class="flex flex-col items-start p-md bg-surface border border-outline-variant rounded-lg">
-                            <span
-                                class="material-symbols-outlined text-secondary-container mb-sm text-3xl">sports_esports</span>
-                            <h3 class="font-h3 text-h3 text-on-surface text-lg mb-xs">Simulace</h3>
-                            <p class="font-body-md text-body-md text-on-surface-variant text-sm">Interaktivní scénáře
-                            </p>
-                        </div>
-                        <div class="flex flex-col items-start p-md bg-surface border border-outline-variant rounded-lg">
-                            <span
-                                class="material-symbols-outlined text-error mb-sm text-3xl">assignment_turned_in</span>
-                            <h3 class="font-h3 text-h3 text-on-surface text-lg mb-xs">Zkušební test</h3>
-                            <p class="font-body-md text-body-md text-on-surface-variant text-sm">Oficiální certifikace
-                            </p>
-                        </div>
-                    </div>
+
 
                 </div>
             </div>

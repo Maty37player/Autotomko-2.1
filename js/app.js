@@ -445,5 +445,8 @@ class App {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
+    // Fix for iOS Safari double-tap issue on hover elements
+    document.addEventListener('touchstart', function() {}, {passive: true});
+    
     window.app = new App();
 });
