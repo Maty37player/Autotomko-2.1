@@ -22,6 +22,7 @@ class App {
         this._bindNavigation();
         this._bindContactModal();
         this._bindTermsModal();
+        this._bindPrivacyModal();
         this._bindControlsModal();
 
         // Show Welcome View by default
@@ -172,6 +173,31 @@ class App {
 
         if (btnTerms && modal && closeBtn) {
             btnTerms.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            });
+
+            closeBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }
+            });
+        }
+    }
+
+    _bindPrivacyModal() {
+        const btnPrivacy = document.getElementById('btn-privacy-policy');
+        const modal = document.getElementById('privacy-modal');
+        const closeBtn = document.getElementById('close-privacy-modal');
+
+        if (btnPrivacy && modal && closeBtn) {
+            btnPrivacy.addEventListener('click', () => {
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
             });

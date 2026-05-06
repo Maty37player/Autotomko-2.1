@@ -600,7 +600,7 @@
             <div class="text-sm text-slate-500 dark:text-slate-400">© 2026 AutoTomko. Komplexní příprava na řidičské zkoušky.</div>
             <nav class="flex flex-wrap justify-center gap-4 text-sm text-slate-500 dark:text-slate-400">
                 <a id="btn-terms-of-service" class="text-slate-500 hover:text-blue-500 hover:underline cursor-pointer">Terms of Service</a>
-                <a class="text-slate-500 hover:text-blue-500 hover:underline cursor-pointer">Privacy Policy</a>
+                <a id="btn-privacy-policy" class="text-slate-500 hover:text-blue-500 hover:underline cursor-pointer">Privacy Policy</a>
                 <a id="btn-contact-support" class="text-slate-500 hover:text-blue-500 hover:underline cursor-pointer">Contact Support</a>
             </nav>
         </div>
@@ -753,6 +753,63 @@
                         Sankce
                     </p>
                     <p>Pokud tato pravidla porušíš, vyhrazujeme si právo omezit nebo zablokovat tvůj účet rychleji než instruktor sáhne na brzdu. 🛑</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Modal -->
+    <div id="privacy-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-xl max-w-2xl w-full shadow-2xl transform transition-all max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-lg border-b border-outline-variant pb-md">
+                <h2 class="font-h2 text-h2 text-on-surface flex items-center gap-sm">
+                    <span class="material-symbols-outlined">lock</span>
+                    Zásady ochrany soukromí
+                </h2>
+                <button id="close-privacy-modal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <div class="space-y-6 text-on-surface-variant font-body-lg leading-relaxed mt-md">
+                <div class="bg-primary-container/20 p-md rounded-xl border border-primary/20">
+                    <p class="font-bold text-primary mb-sm flex items-center gap-xs">
+                        <span class="material-symbols-outlined text-sm">security</span>
+                        Vaše soukromí
+                    </p>
+                    <p>Na AutoTomku si vážíme tvého soukromí víc než instruktor spojky při rozjezdu do kopce.</p>
+                </div>
+
+                <div class="bg-surface-container-low p-md rounded-xl border border-outline-variant">
+                    <p class="font-bold text-on-surface mb-sm flex items-center gap-xs">
+                        <span class="material-symbols-outlined text-sm">database</span>
+                        Sběr dat
+                    </p>
+                    <p>Můžeme ukládat základní informace jako jsou výsledky testů, přihlášení nebo technické údaje potřebné k fungování webu. Nesbíráme tvoje data proto, abychom je prodali tajné organizaci řidičů BMW bez blinkrů. ❌🚙</p>
+                </div>
+
+                <div class="bg-surface-container-low p-md rounded-xl border border-outline-variant">
+                    <p class="font-bold text-on-surface mb-sm flex items-center gap-xs">
+                        <span class="material-symbols-outlined text-sm">analytics</span>
+                        Analytika a chyby
+                    </p>
+                    <p>Některé informace (například cookies nebo analytika) mohou být použity ke zlepšení webu, opravě chyb a zjištění, proč někdo kliknul na odpověď „vjet do zákazu“ s takovým sebevědomím. 🤔</p>
+                </div>
+
+                <div class="bg-surface-container-low p-md rounded-xl border border-outline-variant">
+                    <p class="font-bold text-on-surface mb-sm flex items-center gap-xs">
+                        <span class="material-symbols-outlined text-sm">share_off</span>
+                        Třetí strany
+                    </p>
+                    <p>Tvoje údaje nepředáváme třetím stranám, pokud to nevyžaduje zákon, bezpečnost webu nebo samotný chod služby.</p>
+                </div>
+
+                <div class="bg-secondary-container/10 p-md rounded-xl border border-secondary-container/30">
+                    <p class="font-bold text-on-surface mb-sm flex items-center gap-xs">
+                        <span class="material-symbols-outlined text-sm">shield</span>
+                        Realita internetu
+                    </p>
+                    <p>Používáním AutoTomka souhlasíš s tím, že internet není magické neprůstřelné místo a že děláme maximum pro ochranu dat, ale ani <strong>Tomko</strong> osobně nedokáže zastavit úplně všechno.</p>
                 </div>
             </div>
         </div>
