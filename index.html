@@ -146,9 +146,9 @@
     <main class="flex-grow flex flex-col p-gutter max-w-container-max mx-auto w-full">
 
         <!-- Welcome View -->
-        <section id="welcome-view" class="view-section active h-full flex-col justify-center">
+        <section id="welcome-view" class="view-section active flex-1 flex-col justify-center">
             <div
-                class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col md:flex-row mt-xl">
+                class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col md:flex-row flex-1 w-full">
                 <div class="md:w-1/2 relative min-h-[300px] md:min-h-full">
                     <img alt="Driving" class="absolute inset-0 w-full h-full object-cover"
                         src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdRCAZhH9mxP3L35SAWtQxC17WfeaRSKn_-hQD8aApZsVKP7O4oF3Ekj3SDcotLbrKKZoTQ3zBB_PlKsx_nYhFHoGM2xipmawNXTuIP7sIeZ5_Fxu_NRunu5SyYBGkK0JPtVL_0Ykzy2OpBbA5WhflACpM9Wbnvt276s8Z5Y7Y3Wzhd9A8AszeuIj5jlNDgQoNX5DaDfo4g4uIOwhv91rYSlfgc78vn6k9_DlSZ_cFl2cMl8nWLnN_xrK_JqWWSSCEIiXBaExfMFMO" />
@@ -231,10 +231,16 @@
                     oficiálních pravidel. Na dokončení testu máte 30 minut. Pro úspěšné složení je nutné získat
                     minimálně 43 bodů z 50.
                 </p>
-                <button id="btn-start-exam"
-                    class="bg-error text-on-error font-button text-button px-xl py-md rounded-xl border-b-4 border-[#93000a] hover:bg-[#93000a] active:scale-95 transition-all text-lg flex items-center gap-sm">
-                    <span class="material-symbols-outlined">play_arrow</span> Spustit test
-                </button>
+                <div class="flex flex-col sm:flex-row gap-md justify-center">
+                    <button id="btn-start-exam"
+                        class="bg-error text-on-error font-button text-button px-xl py-md rounded-xl border-b-4 border-[#93000a] hover:bg-[#93000a] active:scale-95 transition-all text-lg flex items-center justify-center gap-sm">
+                        <span class="material-symbols-outlined">play_arrow</span> Spustit test
+                    </button>
+                    <button id="btn-start-exam-feedback"
+                        class="bg-secondary-container text-on-surface font-button text-button px-xl py-md rounded-xl border-b-4 border-[#c58a1f] hover:bg-[#feb229]/80 active:scale-95 transition-all text-lg flex items-center justify-center gap-sm">
+                        <span class="material-symbols-outlined">fact_check</span> Spustit test s feedbackem
+                    </button>
+                </div>
             </div>
 
             <!-- Active Exam Session -->
@@ -331,10 +337,17 @@
         <section id="simulation-view" class="view-section flex-col w-full">
             <div class="flex justify-between items-center mb-lg mt-md">
                 <h2 class="font-h2 text-h2 text-on-surface">2D Jízdní simulátor</h2>
-                <!-- Mission Banner -->
-                <div id="sim-mission-banner" class="bg-primary-container text-on-primary-container px-lg py-2 rounded-lg flex items-center gap-md shadow-sm border border-primary/20">
-                    <span class="material-symbols-outlined text-primary">assignment</span>
-                    <span id="sim-mission-text" class="font-body-md font-bold">Úkol: Zaparkujte na parkovacím místě č. 1</span>
+                <!-- Mission Dropdown -->
+                <div class="relative z-50" id="mission-dropdown-container">
+                    <button id="btn-mission-dropdown" class="bg-primary-container text-on-primary-container px-lg py-2 rounded-lg flex items-center gap-md shadow-sm border border-primary/20 hover:bg-primary-container/80 transition-colors">
+                        <span class="material-symbols-outlined text-primary">assignment</span>
+                        <span id="sim-mission-dropdown-text" class="font-body-md font-bold">Vyber si misi</span>
+                        <span class="material-symbols-outlined text-primary transition-transform" id="sim-mission-dropdown-icon">expand_more</span>
+                    </button>
+                    <!-- Dropdown List -->
+                    <ul id="sim-mission-list" class="absolute right-0 top-full mt-2 w-72 bg-surface border border-outline-variant rounded-lg shadow-lg overflow-hidden hidden flex-col max-h-[60vh] overflow-y-auto">
+                        <!-- Populated by JS -->
+                    </ul>
                 </div>
             </div>
 
@@ -343,21 +356,13 @@
                     <div class="flex flex-wrap gap-md font-body-lg text-on-surface-variant w-full md:w-auto mb-2 md:mb-0">
                         <div>Rychlost: <span id="sim-speed" class="font-bold text-primary">0 km/h</span></div>
                         <div>Motor: <span id="sim-rpm" class="font-bold text-primary">0 RPM</span></div>
-                        <div>Zařazeno: <span id="sim-gear" class="font-bold text-primary">N</span></div>
                     </div>
                     <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
                         <div class="flex items-center gap-1 bg-surface-container rounded-lg p-1">
                             <button id="btn-mode-easy" class="px-3 py-1 rounded-md bg-primary text-on-primary font-bold shadow-sm transition-colors text-sm">Snadný</button>
                             <button id="btn-mode-hard" class="px-3 py-1 rounded-md text-on-surface-variant hover:bg-surface-container-high font-bold transition-colors text-sm">Realistický</button>
                         </div>
-                        <button id="btn-toggle-wheel"
-                            class="font-button bg-surface-container text-primary px-md py-sm rounded flex items-center gap-xs hover:bg-surface-container-high transition-colors">
-                            <span class="material-symbols-outlined">steering</span> Volant
-                        </button>
-                        <button id="btn-toggle-engine"
-                            class="font-button bg-primary text-on-primary px-md py-sm rounded flex items-center gap-xs">
-                            <span class="material-symbols-outlined">power_settings_new</span> Nastartovat
-                        </button>
+
                         <button id="btn-open-controls"
                             class="font-button bg-surface-container text-on-surface-variant px-md py-sm rounded flex items-center gap-xs hover:bg-surface-container-high transition-colors">
                             <span class="material-symbols-outlined">settings</span> Nastavení
@@ -403,94 +408,77 @@
                         </svg>
                     </div>
                 </div>
+
+                <!-- Gear Visualizer -->
+                <div id="gear-visualizer-container" class="flex w-full border-2 border-primary rounded-b-lg overflow-hidden hidden bg-surface mt-[-2px] relative z-10">
+                    <div data-gear-display="-1" class="flex-1 py-1 text-center font-bold text-xl border-r-2 border-primary text-primary bg-surface transition-colors">R</div>
+                    <div data-gear-display="0" class="flex-1 py-1 text-center font-bold text-xl border-r-2 border-primary text-primary bg-surface transition-colors">N</div>
+                    <div data-gear-display="1" class="flex-1 py-1 text-center font-bold text-xl border-r-2 border-primary text-primary bg-surface transition-colors">1</div>
+                    <div data-gear-display="2" class="flex-1 py-1 text-center font-bold text-xl border-r-2 border-primary text-primary bg-surface transition-colors">2</div>
+                    <div data-gear-display="3" class="flex-1 py-1 text-center font-bold text-xl border-r-2 border-primary text-primary bg-surface transition-colors">3</div>
+                    <div data-gear-display="4" class="flex-1 py-1 text-center font-bold text-xl border-r-2 border-primary text-primary bg-surface transition-colors">4</div>
+                    <div data-gear-display="5" class="flex-1 py-1 text-center font-bold text-xl text-primary bg-surface transition-colors">5</div>
+                </div>
             </div>
 
-            <!-- Instruction Banner -->
-            <div id="sim-instruction-banner" class="bg-white border border-outline-variant rounded-xl p-lg mb-lg flex items-center gap-md shadow-sm">
-                 <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span class="material-symbols-outlined text-blue-600">info</span>
+            <!-- Instruction Banner & Controls Indicator -->
+            <div id="sim-instruction-banner" class="bg-white border border-outline-variant rounded-xl mb-lg shadow-sm grid grid-cols-1 md:grid-cols-2 overflow-hidden">
+                 <!-- Instructions Half -->
+                 <div class="p-lg flex items-center gap-md border-b md:border-b-0 md:border-r border-outline-variant">
+                    <div class="w-10 h-10 bg-primary-container rounded-full flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-primary">info</span>
+                    </div>
+                    <span id="sim-instruction-text" class="font-body-md font-bold uppercase tracking-wide text-on-surface">Načítání simulace...</span>
                  </div>
-                 <span id="sim-instruction-text" class="font-body-lg font-semibold uppercase tracking-wide text-on-surface">Načítání simulace...</span>
+                 
+                 <!-- Pedal Indicators Half -->
+                 <div id="pedal-indicators-container" class="p-lg bg-surface-container-lowest flex justify-center items-center gap-xl">
+                    <div id="indicator-clutch" class="flex flex-col items-center gap-xs transition-transform duration-75">
+                        <div class="w-10 h-14 bg-surface-container-high border-2 border-outline-variant rounded-md flex items-center justify-center font-bold text-on-surface-variant shadow-sm">A</div>
+                        <span class="text-[10px] font-bold uppercase text-on-surface-variant">Spojka</span>
+                    </div>
+                    <div id="indicator-brake" class="flex flex-col items-center gap-xs transition-transform duration-75">
+                        <div class="w-12 h-12 bg-surface-container-high border-2 border-outline-variant rounded-md flex items-center justify-center font-bold text-on-surface-variant shadow-sm">S</div>
+                        <span class="text-[10px] font-bold uppercase text-on-surface-variant">Brzda</span>
+                    </div>
+                    <div id="indicator-gas" class="flex flex-col items-center gap-xs transition-transform duration-75">
+                        <div class="w-10 h-14 bg-surface-container-high border-2 border-outline-variant rounded-md flex items-center justify-center font-bold text-on-surface-variant shadow-sm">D</div>
+                        <span class="text-[10px] font-bold uppercase text-on-surface-variant">Plyn</span>
+                    </div>
+                 </div>
             </div>
 
-            <!-- How to Start Guide -->
-            <div id="sim-tutorial-guide" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg mb-lg shadow-sm hidden">
-                <h3 class="font-h3 text-h3 text-on-surface mb-md">Jak nastartovat a vyjet</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-5 gap-lg mt-4">
-                    <div class="flex flex-col items-center text-center gap-sm">
-                        <div class="w-10 h-10 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-lg">1</div>
-                        <p class="text-sm font-medium">Vložte klíček<br>(stiskněte <strong class="text-primary" data-bind-label="ignition">E</strong>)</p>
-                    </div>
-                    <div class="flex flex-col items-center text-center gap-sm">
-                        <div class="w-10 h-10 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-lg">2</div>
-                        <p class="text-sm font-medium">Sešlápněte spojku<br>(podržte <strong class="text-primary" data-bind-label="clutch">A</strong>)</p>
-                    </div>
-                    <div class="flex flex-col items-center text-center gap-sm">
-                        <div class="w-10 h-10 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-lg">3</div>
-                        <p class="text-sm font-medium">Podržte startér<br>(podržte <strong class="text-primary" data-bind-label="ignition">E</strong>)</p>
-                    </div>
-                    <div class="flex flex-col items-center text-center gap-sm">
-                        <div class="w-10 h-10 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-lg">4</div>
-                        <p class="text-sm font-medium">Zařaďte jedničku<br>(stiskněte <strong class="text-primary">1</strong>)</p>
-                    </div>
-                    <div class="flex flex-col items-center text-center gap-sm">
-                        <div class="w-10 h-10 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-lg">5</div>
-                        <p class="text-sm font-medium">Pomalu pouštějte spojku a přidávejte plyn (<strong class="text-primary" data-bind-label="gas">D</strong>)</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-lg" id="sim-controls-section">
-                <!-- Controls State Panel -->
-                <div id="sim-controls-panel" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm">
-                    <h3 class="font-h3 text-h3 text-on-surface mb-md">Stav ovládání</h3>
-                    <div class="flex flex-col gap-lg mt-4">
-                        <div class="flex items-center gap-md">
-                            <span class="w-20 font-label-caps text-on-surface-variant text-xs">Volant</span>
-                            <div class="flex-grow h-3 bg-surface-variant rounded-full relative">
-                                <div id="sim-bar-steering" class="absolute top-0 bottom-0 bg-primary rounded-full transition-all duration-75" style="width: 8px; left: calc(50% - 4px);"></div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-md">
-                            <span class="w-20 font-label-caps text-on-surface-variant text-xs">Spojka</span>
-                            <div class="flex-grow h-3 bg-surface-variant rounded-full overflow-hidden">
-                                <div id="sim-bar-clutch" class="h-full bg-blue-400 transition-all duration-75" style="width: 0%"></div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-md">
-                            <span class="w-20 font-label-caps text-on-surface-variant text-xs">Brzda</span>
-                            <div class="flex-grow h-3 bg-surface-variant rounded-full overflow-hidden">
-                                <div id="sim-bar-brake" class="h-full bg-error transition-all duration-75" style="width: 0%"></div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-md">
-                            <span class="w-20 font-label-caps text-on-surface-variant text-xs">Plyn</span>
-                            <div class="flex-grow h-3 bg-surface-variant rounded-full overflow-hidden">
-                                <div id="sim-bar-gas" class="h-full bg-green-500 transition-all duration-75" style="width: 0%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="flex justify-center gap-lg" id="sim-controls-section">
 
                 <!-- Pedals UI -->
-                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm flex flex-col items-center">
-                    <h3 class="font-h3 text-h3 text-on-surface mb-md self-start">Pedály</h3>
-                    <div class="flex justify-center gap-xl mt-4">
-                        <div class="flex flex-col items-center gap-sm">
+                <div id="sim-on-screen-controls" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm flex flex-col items-center w-full relative">
+                    <h3 class="font-h3 text-h3 text-on-surface mb-md self-start">On-Screen Ovládání</h3>
+                    
+                    <div id="mobile-gears-container" class="flex justify-center gap-2 mb-md w-full flex-wrap hidden">
+                        <button data-gear="0" class="sim-gear-btn w-12 h-12 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold text-lg shadow-sm active:bg-surface-variant transition-colors flex items-center justify-center">N</button>
+                        <button data-gear="1" class="sim-gear-btn w-12 h-12 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold text-lg shadow-sm active:bg-surface-variant transition-colors flex items-center justify-center">1</button>
+                        <button data-gear="2" class="sim-gear-btn w-12 h-12 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold text-lg shadow-sm active:bg-surface-variant transition-colors flex items-center justify-center">2</button>
+                        <button data-gear="3" class="sim-gear-btn w-12 h-12 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold text-lg shadow-sm active:bg-surface-variant transition-colors flex items-center justify-center">3</button>
+                        <button data-gear="4" class="sim-gear-btn w-12 h-12 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold text-lg shadow-sm active:bg-surface-variant transition-colors flex items-center justify-center">4</button>
+                        <button data-gear="5" class="sim-gear-btn w-12 h-12 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold text-lg shadow-sm active:bg-surface-variant transition-colors flex items-center justify-center">5</button>
+                    </div>
+
+                    <div class="flex justify-center gap-xl mt-2 relative w-full">
+                        <div id="pedal-clutch-wrapper" class="flex flex-col items-center gap-sm">
                             <div id="pedal-clutch"
                                 class="w-16 h-32 bg-slate-300 border-b-4 border-slate-400 rounded-lg shadow-md transition-all duration-75 flex items-end justify-center pb-2 select-none">
                                 <span class="font-bold text-slate-500">A</span>
                             </div>
                             <span class="font-label-caps text-on-surface-variant">Spojka</span>
                         </div>
-                        <div class="flex flex-col items-center gap-sm">
+                        <div id="pedal-brake-wrapper" class="flex flex-col items-center gap-sm">
                             <div id="pedal-brake"
                                 class="w-20 h-24 bg-slate-300 border-b-4 border-slate-400 rounded-lg shadow-md transition-all duration-75 flex items-end justify-center pb-2 select-none self-end">
                                 <span class="font-bold text-slate-500">S</span>
                             </div>
                             <span class="font-label-caps text-on-surface-variant">Brzda</span>
                         </div>
-                        <div class="flex flex-col items-center gap-sm">
+                        <div id="pedal-gas-wrapper" class="flex flex-col items-center gap-sm">
                             <div id="pedal-gas"
                                 class="w-12 h-32 bg-slate-300 border-b-4 border-slate-400 rounded-lg shadow-md transition-all duration-75 flex items-end justify-center pb-2 select-none">
                                 <span class="font-bold text-slate-500">D</span>
@@ -514,15 +502,6 @@
                 </div>
             </div>
 
-            <div id="sim-hard-instructions" class="flex justify-center gap-xl mt-xl">
-                <div class="flex items-center gap-md text-on-surface-variant font-body-md">
-                    <span class="material-symbols-outlined">keyboard_arrow_left</span>
-                    Zatočit doleva (Šipka vlevo)
-                </div>
-                <div class="flex items-center gap-md text-on-surface-variant font-body-md">
-                    Zatočit doprava (Šipka vpravo)
-                    <span class="material-symbols-outlined">keyboard_arrow_right</span>
-                </div>
             </div>
         </section>
 
@@ -575,6 +554,15 @@
             </div>
             
             <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                <!-- Steering Wheel Toggle -->
+                <div class="flex items-center justify-between p-md bg-surface-container-low border border-primary rounded-xl mb-md">
+                    <div class="flex items-center gap-md text-on-surface">
+                        <span class="material-symbols-outlined text-primary">sports_esports</span>
+                        <span class="font-bold">Zobrazit volant na obrazovce</span>
+                    </div>
+                    <button id="btn-toggle-wheel" class="bg-surface-container-high px-lg py-2 rounded-lg font-bold min-w-[100px] hover:bg-primary hover:text-white transition-colors border border-primary text-primary">ZAPNOUT</button>
+                </div>
+                
                 <div class="flex items-center justify-between p-md bg-surface border border-outline-variant rounded-xl">
                     <span class="font-body-md text-on-surface">Plyn</span>
                     <button data-control="gas" class="rebind-button bg-surface-container-high px-lg py-2 rounded-lg font-bold min-w-[100px] hover:bg-primary-container transition-colors uppercase border border-outline-variant">D</button>
@@ -596,8 +584,28 @@
                     <button data-control="steeringRight" class="rebind-button bg-surface-container-high px-lg py-2 rounded-lg font-bold min-w-[100px] hover:bg-primary-container transition-colors uppercase border border-outline-variant">ARROWRIGHT</button>
                 </div>
                 <div class="flex items-center justify-between p-md bg-surface border border-outline-variant rounded-xl">
-                    <span class="font-body-md text-on-surface">Klíček / Startér</span>
-                    <button data-control="ignition" class="rebind-button bg-surface-container-high px-lg py-2 rounded-lg font-bold min-w-[100px] hover:bg-primary-container transition-colors uppercase border border-outline-variant">E</button>
+                    <span class="font-body-md text-on-surface">Neutrál</span>
+                    <button data-control="gearN" class="rebind-button bg-surface-container-high px-lg py-2 rounded-lg font-bold min-w-[100px] hover:bg-primary-container transition-colors uppercase border border-outline-variant">Q</button>
+                </div>
+                <div class="flex items-center justify-between p-md bg-surface border border-outline-variant rounded-xl">
+                    <span class="font-body-md text-on-surface">Zařadit 1</span>
+                    <button data-control="gear1" class="rebind-button bg-surface-container-high px-lg py-2 rounded-lg font-bold min-w-[100px] hover:bg-primary-container transition-colors uppercase border border-outline-variant">W</button>
+                </div>
+                <div class="flex items-center justify-between p-md bg-surface border border-outline-variant rounded-xl">
+                    <span class="font-body-md text-on-surface">Zařadit 2</span>
+                    <button data-control="gear2" class="rebind-button bg-surface-container-high px-lg py-2 rounded-lg font-bold min-w-[100px] hover:bg-primary-container transition-colors uppercase border border-outline-variant">E</button>
+                </div>
+                <div class="flex items-center justify-between p-md bg-surface border border-outline-variant rounded-xl">
+                    <span class="font-body-md text-on-surface">Zařadit 3</span>
+                    <button data-control="gear3" class="rebind-button bg-surface-container-high px-lg py-2 rounded-lg font-bold min-w-[100px] hover:bg-primary-container transition-colors uppercase border border-outline-variant">R</button>
+                </div>
+                <div class="flex items-center justify-between p-md bg-surface border border-outline-variant rounded-xl">
+                    <span class="font-body-md text-on-surface">Zařadit 4</span>
+                    <button data-control="gear4" class="rebind-button bg-surface-container-high px-lg py-2 rounded-lg font-bold min-w-[100px] hover:bg-primary-container transition-colors uppercase border border-outline-variant">T</button>
+                </div>
+                <div class="flex items-center justify-between p-md bg-surface border border-outline-variant rounded-xl">
+                    <span class="font-body-md text-on-surface">Zařadit 5</span>
+                    <button data-control="gear5" class="rebind-button bg-surface-container-high px-lg py-2 rounded-lg font-bold min-w-[100px] hover:bg-primary-container transition-colors uppercase border border-outline-variant">Z</button>
                 </div>
             </div>
             

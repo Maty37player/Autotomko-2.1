@@ -41,20 +41,18 @@ export class UIManager {
         // Simulator UI Elements
         this.simInstructionText = document.getElementById('sim-instruction-text');
         this.simInstructionBanner = document.getElementById('sim-instruction-banner');
-        this.simMissionText = document.getElementById('sim-mission-text');
+        
+        // Mission Dropdown Elements
+        this.btnMissionDropdown = document.getElementById('btn-mission-dropdown');
+        this.simMissionDropdownText = document.getElementById('sim-mission-dropdown-text');
+        this.simMissionDropdownIcon = document.getElementById('sim-mission-dropdown-icon');
+        this.simMissionList = document.getElementById('sim-mission-list');
+        this.missionDropdownContainer = document.getElementById('mission-dropdown-container');
         this.simSuccessOverlay = document.getElementById('sim-success-overlay');
         this.simFailureOverlay = document.getElementById('sim-failure-overlay');
         this.btnModeEasy = document.getElementById('btn-mode-easy');
         this.btnModeHard = document.getElementById('btn-mode-hard');
-        this.simTutorialGuide = document.getElementById('sim-tutorial-guide');
-        this.simControlsSection = document.getElementById('sim-controls-section');
         this.simEasyInstructions = document.getElementById('sim-easy-instructions');
-        this.simHardInstructions = document.getElementById('sim-hard-instructions');
-
-        this.simBarSteering = document.getElementById('sim-bar-steering');
-        this.simBarClutch = document.getElementById('sim-bar-clutch');
-        this.simBarBrake = document.getElementById('sim-bar-brake');
-        this.simBarGas = document.getElementById('sim-bar-gas');
         
         this.steeringWheelContainer = document.getElementById('steering-wheel-container');
         this.visualSteeringWheel = document.getElementById('visual-steering-wheel');
@@ -65,6 +63,173 @@ export class UIManager {
         this.btnCloseControls = document.getElementById('close-controls-modal');
         this.rebindButtons = document.querySelectorAll('.rebind-button');
         this.bindLabels = document.querySelectorAll('[data-bind-label]');
+
+        this.simOnScreenControls = document.getElementById('sim-on-screen-controls');
+        this.mobileGearsContainer = document.getElementById('mobile-gears-container');
+        this.pedalClutchWrapper = document.getElementById('pedal-clutch-wrapper');
+        this.pedalBrakeWrapper = document.getElementById('pedal-brake-wrapper');
+        this.pedalGasWrapper = document.getElementById('pedal-gas-wrapper');
+        this.btnToggleWheel = document.getElementById('btn-toggle-wheel');
+        this.gearVisualizerContainer = document.getElementById('gear-visualizer-container');
+        this.gearDisplays = document.querySelectorAll('[data-gear-display]');
+        
+        this.pedalIndicatorsContainer = document.getElementById('pedal-indicators-container');
+        this.indicatorClutch = document.getElementById('indicator-clutch');
+        this.indicatorBrake = document.getElementById('indicator-brake');
+        this.indicatorGas = document.getElementById('indicator-gas');
+
+        this.isMobile = window.innerWidth <= 768;
+        
+        this.steeringInput = 0; // -1 to 1 based on wheel drag
+        this._initSteeringWheelDrag();
+        this._initDropdown();
+    }
+
+    _initDropdown() {
+        // Dropdown toggle
+        if (this.btnMissionDropdown && this.simMissionList) {
+            this.btnMissionDropdown.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.simMissionList.classList.toggle('hidden');
+                if (this.simMissionList.classList.contains('hidden')) {
+                    this.simMissionDropdownIcon.style.transform = 'rotate(0deg)';
+                } else {
+                    this.simMissionDropdownIcon.style.transform = 'rotate(180deg)';
+                }
+            });
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (this.missionDropdownContainer && !this.missionDropdownContainer.contains(e.target)) {
+                    this.simMissionList.classList.add('hidden');
+                    if (this.simMissionDropdownIcon) this.simMissionDropdownIcon.style.transform = 'rotate(0deg)';
+                }
+            });
+        }
+    }
+
+    /**
+     * Updates the mission dropdown list and current selection.
+     */
+    updateMissionsList(missions, currentIndex, completedMissions, onMissionSelect) {
+        if (!this.simMissionList || !this.simMissionDropdownText) return;
+
+        // Update main button text
+        const currentMission = missions[currentIndex];
+        if (currentMission) {
+            this.simMissionDropdownText.innerText = currentMission.text;
+            if (completedMissions.includes(currentIndex)) {
+                this.simMissionDropdownText.classList.add('text-green-600');
+            } else {
+                this.simMissionDropdownText.classList.remove('text-green-600');
+            }
+        }
+
+        // Populate dropdown
+        this.simMissionList.innerHTML = '';
+        missions.forEach((mission, index) => {
+            const li = document.createElement('li');
+            li.className = 'px-lg py-md border-b border-outline-variant last:border-b-0 cursor-pointer hover:bg-surface-container transition-colors flex items-center justify-between gap-md';
+            
+            const textSpan = document.createElement('span');
+            textSpan.className = 'font-body-md';
+            textSpan.innerText = mission.text;
+
+            const iconSpan = document.createElement('span');
+            iconSpan.className = 'material-symbols-outlined text-sm flex-shrink-0';
+            
+            if (completedMissions.includes(index)) {
+                textSpan.classList.add('text-green-600', 'font-bold');
+                iconSpan.classList.add('text-green-600');
+                iconSpan.innerText = 'check_circle';
+            } else if (index === currentIndex) {
+                textSpan.classList.add('text-primary', 'font-bold');
+                iconSpan.classList.add('text-primary');
+                iconSpan.innerText = 'play_circle';
+            } else {
+                textSpan.classList.add('text-on-surface');
+                iconSpan.classList.add('text-on-surface-variant');
+                iconSpan.innerText = 'radio_button_unchecked';
+            }
+
+            li.appendChild(textSpan);
+            li.appendChild(iconSpan);
+
+            li.addEventListener('click', () => {
+                this.simMissionList.classList.add('hidden');
+                if (this.simMissionDropdownIcon) this.simMissionDropdownIcon.style.transform = 'rotate(0deg)';
+                if (onMissionSelect) onMissionSelect(index);
+            });
+
+            this.simMissionList.appendChild(li);
+        });
+    }
+
+    _initSteeringWheelDrag() {
+        if (!this.visualSteeringWheel || !this.steeringWheelContainer) return;
+        
+        let isDragging = false;
+        let startAngle = 0;
+        let currentRotation = 0;
+
+        const getAngle = (e) => {
+            const rect = this.visualSteeringWheel.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            let clientX, clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            return Math.atan2(clientY - centerY, clientX - centerX);
+        };
+
+        const onPointerDown = (e) => {
+            isDragging = true;
+            startAngle = getAngle(e) - currentRotation;
+            e.preventDefault();
+        };
+
+        const onPointerMove = (e) => {
+            if (!isDragging) return;
+            const angle = getAngle(e);
+            currentRotation = angle - startAngle;
+            
+            // Limit rotation to -PI to PI
+            if (currentRotation > Math.PI) currentRotation = Math.PI;
+            if (currentRotation < -Math.PI) currentRotation = -Math.PI;
+            
+            // Normalize to -1 to 1 for steeringInput
+            this.steeringInput = currentRotation / Math.PI;
+            
+            const degrees = currentRotation * (180 / Math.PI);
+            this.visualSteeringWheel.style.transform = `rotate(${degrees}deg)`;
+            e.preventDefault();
+        };
+
+        const onPointerUp = (e) => {
+            isDragging = false;
+            // Snap back to center
+            currentRotation = 0;
+            this.steeringInput = 0;
+            this.visualSteeringWheel.style.transform = `rotate(0deg)`;
+            this.visualSteeringWheel.style.transition = 'transform 0.2s ease-out';
+            setTimeout(() => {
+                this.visualSteeringWheel.style.transition = '';
+            }, 200);
+        };
+
+        this.steeringWheelContainer.addEventListener('mousedown', onPointerDown);
+        this.steeringWheelContainer.addEventListener('touchstart', onPointerDown, {passive: false});
+
+        window.addEventListener('mousemove', onPointerMove);
+        window.addEventListener('touchmove', onPointerMove, {passive: false});
+
+        window.addEventListener('mouseup', onPointerUp);
+        window.addEventListener('touchend', onPointerUp);
     }
 
     /**
@@ -101,6 +266,7 @@ export class UIManager {
         this.categoryGrid.innerHTML = '';
 
         const categoryImages = {
+            'all': "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=400&q=80",
             9: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=400&q=80",
             10: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&q=80",
             11: "https://images.unsplash.com/photo-1468091730376-d3b5558b71ab?auto=format&fit=crop&q=80&w=400",
@@ -209,7 +375,7 @@ export class UIManager {
 
         sortedAnswers.forEach((ans, index) => {
             const btn = document.createElement('button');
-            btn.className = "w-full text-left bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex items-start gap-md hover:bg-surface-container-low transition-colors shadow-sm";
+            btn.className = "w-full text-left bg-surface-container-lowest border-2 border-outline-variant rounded-xl p-md flex items-start gap-md hover:bg-surface-container-low transition-colors shadow-sm";
             btn.dataset.id = ans.id;
             
             let answerContent = `<span class="font-body-lg text-body-lg text-on-surface">${ans.answerText !== '.' ? ans.answerText : ''}</span>`;
@@ -338,7 +504,13 @@ export class UIManager {
                 const correctAns = question.questionAnswers.find(a => a.isCorrect);
                 const isCorrect = correctAns && correctAns.id === answers[i].selectedAnswerId;
 
-                if (i === currentIndex) {
+                if (!isAnswered) {
+                    if (i === currentIndex) {
+                        baseClasses += "bg-primary text-white border-primary ring-2 ring-primary-container ring-offset-1";
+                    } else {
+                        baseClasses += "bg-surface-container-lowest text-on-surface-variant border-outline-variant hover:bg-surface-container-low";
+                    }
+                } else if (i === currentIndex) {
                     baseClasses += isCorrect ? "bg-[#1e8e3e] text-white border-[#1e8e3e] ring-2 ring-[#e6f4ea] ring-offset-1" : "bg-error text-white border-error ring-2 ring-error-container ring-offset-1";
                 } else {
                     baseClasses += isCorrect ? "bg-[#e6f4ea] text-[#0d652d] border-[#1e8e3e]" : "bg-error-container text-on-error-container border-error";
@@ -366,7 +538,7 @@ export class UIManager {
     /**
      * Renders a single exam question card (without revealing answer).
      */
-    renderExamQuestion(question, currentIndex, totalQuestions, currentAnswerId, onAnswerSelected) {
+    renderExamQuestion(question, currentIndex, totalQuestions, currentAnswerId, onAnswerSelected, isFeedbackMode = false) {
         this.examProgressText.innerText = `Otázka ${currentIndex + 1} z ${totalQuestions}`;
         const percent = ((currentIndex + 1) / totalQuestions) * 100;
         this.examProgressBar.style.width = `${percent}%`;
@@ -410,33 +582,77 @@ export class UIManager {
         sortedAnswers.forEach((ans, index) => {
             const btn = document.createElement('button');
             const isSelected = currentAnswerId === ans.id;
+            const isCorrect = ans.isCorrect;
             
-            let answerContent = `<span class="font-body-lg text-body-lg ${isSelected ? 'text-on-primary-container font-medium' : 'text-on-surface'}">${ans.answerText !== '.' ? ans.answerText : ''}</span>`;
+            let textColor = 'text-on-surface';
+            if (isFeedbackMode && currentAnswerId !== null) {
+                if (isCorrect) textColor = 'text-[#0d652d] font-medium';
+                else if (isSelected && !isCorrect) textColor = 'text-on-error-container font-medium';
+            } else {
+                if (isSelected) textColor = 'text-on-primary-container font-medium';
+            }
+
+            let answerContent = `<span class="font-body-lg text-body-lg ${textColor}">${ans.answerText !== '.' ? ans.answerText : ''}</span>`;
             if (ans.mediaContent && ans.mediaContent.mediaUrl) {
                 const mediaUrl = 'https://etesty2.mdcr.cz' + ans.mediaContent.mediaUrl;
                 answerContent += `<img src="${mediaUrl}" alt="Answer Image" class="max-h-32 object-contain rounded mt-1 bg-white border border-outline-variant"/>`;
             }
 
-            if (isSelected) {
-                btn.className = "w-full text-left bg-primary-container border-2 border-primary rounded-xl p-md flex items-start gap-md shadow-sm";
-                btn.innerHTML = `
-                    <div class="w-8 h-8 rounded-full border-2 border-primary bg-primary text-white flex items-center justify-center flex-shrink-0 font-button text-button mt-1">
-                        ${letters[index] || ''}
-                    </div>
-                    <div class="flex flex-col items-start gap-1">
-                        ${answerContent}
-                    </div>
-                `;
+            if (isFeedbackMode && currentAnswerId !== null) {
+                btn.disabled = true; // Lock answers after selecting in feedback mode
+                if (isCorrect) {
+                    btn.className = "w-full text-left bg-[#e6f4ea] border-2 border-[#1e8e3e] rounded-xl p-md flex items-start gap-md shadow-sm relative overflow-hidden";
+                    btn.innerHTML = `
+                        <div class="w-8 h-8 rounded-full border-2 border-[#1e8e3e] bg-[#1e8e3e] text-white flex items-center justify-center flex-shrink-0 mt-1">
+                            <span class="material-symbols-outlined text-[18px]">check</span>
+                        </div>
+                        <div class="flex flex-col items-start gap-1">
+                            ${answerContent}
+                        </div>
+                    `;
+                } else if (isSelected && !isCorrect) {
+                    btn.className = "w-full text-left bg-error-container border-2 border-error rounded-xl p-md flex items-start gap-md shadow-sm relative overflow-hidden";
+                    btn.innerHTML = `
+                        <div class="w-8 h-8 rounded-full border-2 border-error bg-error text-on-error flex items-center justify-center flex-shrink-0 mt-1">
+                            <span class="material-symbols-outlined text-[18px]">close</span>
+                        </div>
+                        <div class="flex flex-col items-start gap-1">
+                            ${answerContent}
+                        </div>
+                    `;
+                } else {
+                    btn.className = "w-full text-left bg-surface-container-lowest border-2 border-outline-variant rounded-xl p-md flex items-start gap-md shadow-sm opacity-60";
+                    btn.innerHTML = `
+                        <div class="w-8 h-8 rounded-full border-2 border-outline-variant flex items-center justify-center flex-shrink-0 text-on-surface-variant font-button text-button mt-1">
+                            ${letters[index] || ''}
+                        </div>
+                        <div class="flex flex-col items-start gap-1">
+                            ${answerContent}
+                        </div>
+                    `;
+                }
             } else {
-                btn.className = "w-full text-left bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex items-start gap-md hover:bg-surface-container-low transition-colors shadow-sm";
-                btn.innerHTML = `
-                    <div class="w-8 h-8 rounded-full border-2 border-outline-variant flex items-center justify-center flex-shrink-0 text-on-surface-variant font-button text-button mt-1">
-                        ${letters[index] || ''}
-                    </div>
-                    <div class="flex flex-col items-start gap-1">
-                        ${answerContent}
-                    </div>
-                `;
+                if (isSelected) {
+                    btn.className = "w-full text-left bg-primary-container border-2 border-primary rounded-xl p-md flex items-start gap-md shadow-sm";
+                    btn.innerHTML = `
+                        <div class="w-8 h-8 rounded-full border-2 border-primary bg-primary text-white flex items-center justify-center flex-shrink-0 font-button text-button mt-1">
+                            ${letters[index] || ''}
+                        </div>
+                        <div class="flex flex-col items-start gap-1">
+                            ${answerContent}
+                        </div>
+                    `;
+                } else {
+                    btn.className = "w-full text-left bg-surface-container-lowest border-2 border-outline-variant rounded-xl p-md flex items-start gap-md hover:bg-surface-container-low transition-colors shadow-sm";
+                    btn.innerHTML = `
+                        <div class="w-8 h-8 rounded-full border-2 border-outline-variant flex items-center justify-center flex-shrink-0 text-on-surface-variant font-button text-button mt-1">
+                            ${letters[index] || ''}
+                        </div>
+                        <div class="flex flex-col items-start gap-1">
+                            ${answerContent}
+                        </div>
+                    `;
+                }
             }
 
             btn.addEventListener('click', () => onAnswerSelected(ans.id));
@@ -526,7 +742,7 @@ export class UIManager {
                     </div>
                 `;
             } else {
-                btn.className = "w-full text-left bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex items-start gap-md shadow-sm opacity-60";
+                btn.className = "w-full text-left bg-surface-container-lowest border-2 border-outline-variant rounded-xl p-md flex items-start gap-md shadow-sm opacity-60";
                 btn.innerHTML = `
                     <div class="w-8 h-8 rounded-full border-2 border-outline-variant flex items-center justify-center flex-shrink-0 text-on-surface-variant font-button text-button mt-1">
                         ${letters[index] || ''}
@@ -579,14 +795,25 @@ export class UIManager {
      * Updates the control status bars.
      */
     updateSimControls(inputs) {
-        if (this.simBarSteering) {
-            // Steering is -1 to 1, map to 0-100% with center at 50%
-            const steeringPos = (inputs.steering + 1) * 50;
-            this.simBarSteering.style.left = `calc(${steeringPos}% - 4px)`;
+        // Update Instruction Banner Pedal Indicators & Animations
+        if (this.indicatorClutch) {
+            const inner = this.indicatorClutch.querySelector('div');
+            inner.style.transform = `translateY(${inputs.clutch * 4}px)`;
+            inner.style.backgroundColor = inputs.clutch > 0.1 ? 'var(--md-sys-color-primary-container, #d1e4ff)' : '';
+            this.indicatorClutch.style.scale = 1 - (inputs.clutch * 0.05);
         }
-        if (this.simBarClutch) this.simBarClutch.style.width = `${inputs.clutch * 100}%`;
-        if (this.simBarBrake) this.simBarBrake.style.width = `${inputs.brake * 100}%`;
-        if (this.simBarGas) this.simBarGas.style.width = `${inputs.gas * 100}%`;
+        if (this.indicatorBrake) {
+            const inner = this.indicatorBrake.querySelector('div');
+            inner.style.transform = `translateY(${inputs.brake * 4}px)`;
+            inner.style.backgroundColor = inputs.brake > 0.1 ? '#ffdad6' : ''; // Error container like color
+            this.indicatorBrake.style.scale = 1 - (inputs.brake * 0.05);
+        }
+        if (this.indicatorGas) {
+            const inner = this.indicatorGas.querySelector('div');
+            inner.style.transform = `translateY(${inputs.gas * 4}px)`;
+            inner.style.backgroundColor = inputs.gas > 0.1 ? '#d4f1d4' : ''; // Success light green
+            this.indicatorGas.style.scale = 1 - (inputs.gas * 0.05);
+        }
     }
 
     /**
@@ -682,17 +909,31 @@ export class UIManager {
      * Toggles the visual steering wheel visibility.
      */
     toggleSteeringWheel() {
-        if (!this.steeringWheelContainer) return;
-        this.steeringWheelContainer.classList.toggle('hidden');
+        if (!this.steeringWheelContainer || !this.btnToggleWheel) return;
+        
+        const isHidden = this.steeringWheelContainer.classList.toggle('hidden');
+        
+        if (isHidden) {
+            this.btnToggleWheel.innerText = 'ZAPNOUT';
+            this.btnToggleWheel.classList.replace('bg-primary', 'bg-surface-container-high');
+            this.btnToggleWheel.classList.replace('text-white', 'text-primary');
+        } else {
+            this.btnToggleWheel.innerText = 'VYPNOUT';
+            this.btnToggleWheel.classList.replace('bg-surface-container-high', 'bg-primary');
+            this.btnToggleWheel.classList.replace('text-primary', 'text-white');
+        }
     }
 
     /**
-     * Rotates the visual steering wheel.
-     * @param {number} angle In radians
+     * Rotates the visual steering wheel based on input (only if not currently dragging).
+     * @param {number} input -1 to 1
      */
-    rotateSteeringWheel(angle) {
+    rotateSteeringWheel(input) {
         if (!this.visualSteeringWheel) return;
-        const degrees = angle * (180 / Math.PI) * 2; // Multiply for visual impact
+        // Don't update visual rotation from physics if user is actively dragging the wheel (we can check by checking if steeringInput != 0 roughly, or just let physics drive it if keyboard is used)
+        if (this.steeringInput !== 0) return; // User is dragging
+
+        const degrees = input * 180; // 1 = 180 degrees
         this.visualSteeringWheel.style.transform = `rotate(${degrees}deg)`;
     }
 
@@ -709,20 +950,77 @@ export class UIManager {
     setSimModeUI(mode) {
         if (!this.btnModeEasy || !this.btnModeHard) return;
         
+        // Initial setup for device type
+        if (this.simOnScreenControls) {
+            if (this.isMobile) {
+                this.simOnScreenControls.classList.remove('hidden');
+                this.steeringWheelContainer.classList.remove('hidden');
+            } else {
+                this.simOnScreenControls.classList.add('hidden');
+                this.steeringWheelContainer.classList.add('hidden');
+            }
+        }
+
         if (mode === 'EASY') {
             this.btnModeEasy.className = "px-3 py-1 rounded-md bg-primary text-on-primary font-bold shadow-sm transition-colors text-sm";
             this.btnModeHard.className = "px-3 py-1 rounded-md text-on-surface-variant hover:bg-surface-container-high font-bold transition-colors text-sm";
-            if (this.simTutorialGuide) this.simTutorialGuide.classList.add('hidden');
-            if (this.simControlsSection) this.simControlsSection.classList.add('hidden');
             if (this.simEasyInstructions) this.simEasyInstructions.classList.remove('hidden');
-            if (this.simHardInstructions) this.simHardInstructions.classList.add('hidden');
+            
+            if (this.pedalIndicatorsContainer && this.simInstructionBanner) {
+                this.pedalIndicatorsContainer.classList.add('hidden');
+                this.simInstructionBanner.classList.remove('md:grid-cols-2');
+                this.simInstructionBanner.classList.add('md:grid-cols-1');
+            }
+            
+            // Hide Missions in Easy Mode
+            if (this.missionDropdownContainer) this.missionDropdownContainer.classList.add('hidden');
+            
+            // Mobile Specifics
+            if (this.mobileGearsContainer) this.mobileGearsContainer.classList.add('hidden');
+            if (this.pedalClutchWrapper) this.pedalClutchWrapper.classList.add('hidden');
+            if (this.gearVisualizerContainer) this.gearVisualizerContainer.classList.add('hidden');
+            
+            // Re-center remaining pedals visually
+            if (this.pedalGasWrapper) this.pedalGasWrapper.classList.remove('self-end');
+
         } else {
             this.btnModeHard.className = "px-3 py-1 rounded-md bg-primary text-on-primary font-bold shadow-sm transition-colors text-sm";
             this.btnModeEasy.className = "px-3 py-1 rounded-md text-on-surface-variant hover:bg-surface-container-high font-bold transition-colors text-sm";
-            if (this.simTutorialGuide) this.simTutorialGuide.classList.remove('hidden');
-            if (this.simControlsSection) this.simControlsSection.classList.remove('hidden');
             if (this.simEasyInstructions) this.simEasyInstructions.classList.add('hidden');
-            if (this.simHardInstructions) this.simHardInstructions.classList.remove('hidden');
+            
+            if (this.pedalIndicatorsContainer && this.simInstructionBanner) {
+                this.pedalIndicatorsContainer.classList.remove('hidden');
+                this.simInstructionBanner.classList.remove('md:grid-cols-1');
+                this.simInstructionBanner.classList.add('md:grid-cols-2');
+            }
+            
+            // Show Missions in Hard Mode
+            if (this.missionDropdownContainer) this.missionDropdownContainer.classList.remove('hidden');
+            
+            // Mobile Specifics
+            if (this.mobileGearsContainer) {
+                if (this.isMobile) this.mobileGearsContainer.classList.remove('hidden');
+                else this.mobileGearsContainer.classList.add('hidden'); // Never show on desktop
+            }
+            if (this.pedalClutchWrapper) this.pedalClutchWrapper.classList.remove('hidden');
+            
+            if (this.gearVisualizerContainer) this.gearVisualizerContainer.classList.remove('hidden');
+            
+            // Re-center
+            if (this.pedalGasWrapper) this.pedalGasWrapper.classList.add('self-end'); // Put back offset if we want it? Actually let's keep them straight for mobile
         }
+    }
+
+    updateGearDisplay(gear) {
+        if (!this.gearDisplays) return;
+        this.gearDisplays.forEach(el => {
+            if (parseInt(el.dataset.gearDisplay) === gear) {
+                el.classList.add('bg-primary', 'text-white');
+                el.classList.remove('text-primary', 'bg-surface');
+            } else {
+                el.classList.remove('bg-primary', 'text-white');
+                el.classList.add('text-primary', 'bg-surface');
+            }
+        });
     }
 }

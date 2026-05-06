@@ -108,7 +108,12 @@ class App {
         // Exam Events
         const btnStartExam = document.getElementById('btn-start-exam');
         if (btnStartExam) {
-            btnStartExam.addEventListener('click', () => this._startExamSession());
+            btnStartExam.addEventListener('click', () => this._startExamSession(false));
+        }
+
+        const btnStartExamFeedback = document.getElementById('btn-start-exam-feedback');
+        if (btnStartExamFeedback) {
+            btnStartExamFeedback.addEventListener('click', () => this._startExamSession(true));
         }
 
         const btnSubmitExam = document.getElementById('btn-submit-exam');
@@ -280,7 +285,7 @@ class App {
 
     // --- Exam Logic ---
 
-    _startExamSession() {
+    _startExamSession(isFeedbackMode = false) {
         if (!this.quizEngine.allQuestions || this.quizEngine.allQuestions.length === 0) {
             alert("Otázky se ještě načítají. Prosím počkejte chvíli.");
             return;
@@ -296,7 +301,8 @@ class App {
                     question: questions[i],
                     selectedAnswerId: null
                 })),
-                timeRemaining: 30 * 60 // 30 minutes in seconds
+                timeRemaining: 30 * 60, // 30 minutes in seconds
+                isFeedbackMode: isFeedbackMode
             };
 
             // Reset submit button from review mode
@@ -368,7 +374,8 @@ class App {
                 (answerId) => {
                     session.answers[session.currentIndex].selectedAnswerId = answerId;
                     this._renderCurrentExamQuestion();
-                }
+                },
+                session.isFeedbackMode
             );
         }
 
@@ -380,7 +387,7 @@ class App {
                 session.currentIndex = index;
                 this._renderCurrentExamQuestion();
             },
-            session.isReviewMode
+            session.isReviewMode || session.isFeedbackMode
         );
     }
 

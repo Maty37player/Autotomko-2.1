@@ -68,15 +68,24 @@ export class QuizEngine {
      * @returns {Array} List of category objects {id, name, count}
      */
     getCategories() {
-        return this.categories;
+        const totalCount = this.categories.reduce((sum, cat) => sum + cat.count, 0);
+        const allCategory = {
+            id: 'all',
+            name: 'Všechny otázky',
+            count: totalCount
+        };
+        return [allCategory, ...this.categories];
     }
 
     /**
      * Gets all questions for a specific category.
-     * @param {number} categoryId 
+     * @param {number|string} categoryId 
      * @returns {Array} Filtered questions
      */
     getQuestionsByCategory(categoryId) {
+        if (categoryId === 'all') {
+            return [...this.allQuestions];
+        }
         return this.allQuestions.filter(q => Number(q.basketScopeId) === Number(categoryId));
     }
 
