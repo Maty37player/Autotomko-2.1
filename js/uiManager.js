@@ -79,7 +79,15 @@ export class UIManager {
         this.indicatorGas = document.getElementById('indicator-gas');
 
         this.isMobile = window.innerWidth <= 768;
-        
+
+        // Mobile panel elements
+        this.mobInstructionText = document.getElementById('mob-instruction-text');
+        this.mobEasyPedals = document.getElementById('mob-easy-pedals');
+        this.mobHardPedals = document.getElementById('mob-hard-pedals');
+        this.mobGearsRow = document.getElementById('mob-gears-row');
+        this.mobSteeringWheelContainer = document.getElementById('mob-steering-wheel-container');
+        this.mobVisualSteeringWheel = document.getElementById('mob-visual-steering-wheel');
+
         this.steeringInput = 0; // -1 to 1 based on wheel drag
         this._initSteeringWheelDrag();
         this._initDropdown();
@@ -165,17 +173,23 @@ export class UIManager {
     }
 
     _initSteeringWheelDrag() {
-        if (!this.visualSteeringWheel || !this.steeringWheelContainer) return;
-        
+        // Init desktop floating wheel
+        this._initDragOn(this.steeringWheelContainer, this.visualSteeringWheel);
+        // Init mobile panel wheel
+        this._initDragOn(this.mobSteeringWheelContainer, this.mobVisualSteeringWheel);
+    }
+
+    _initDragOn(container, wheelSvg) {
+        if (!container || !wheelSvg) return;
+
         let isDragging = false;
         let startAngle = 0;
         let currentRotation = 0;
 
         const getAngle = (e) => {
-            const rect = this.visualSteeringWheel.getBoundingClientRect();
+            const rect = wheelSvg.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
-            
             let clientX, clientY;
             if (e.touches && e.touches.length > 0) {
                 clientX = e.touches[0].clientX;
@@ -197,39 +211,41 @@ export class UIManager {
             if (!isDragging) return;
             const angle = getAngle(e);
             currentRotation = angle - startAngle;
-            
-            // Limit rotation to -PI to PI
             if (currentRotation > Math.PI) currentRotation = Math.PI;
             if (currentRotation < -Math.PI) currentRotation = -Math.PI;
-            
-            // Normalize to -1 to 1 for steeringInput
             this.steeringInput = currentRotation / Math.PI;
-            
             const degrees = currentRotation * (180 / Math.PI);
-            this.visualSteeringWheel.style.transform = `rotate(${degrees}deg)`;
+            wheelSvg.style.transform = `rotate(${degrees}deg)`;
+            // Mirror rotation on the other wheel
+            this._mirrorWheelRotation(wheelSvg, degrees);
             e.preventDefault();
         };
 
-        const onPointerUp = (e) => {
+        const onPointerUp = () => {
             isDragging = false;
-            // Snap back to center
             currentRotation = 0;
             this.steeringInput = 0;
-            this.visualSteeringWheel.style.transform = `rotate(0deg)`;
-            this.visualSteeringWheel.style.transition = 'transform 0.2s ease-out';
-            setTimeout(() => {
-                this.visualSteeringWheel.style.transition = '';
-            }, 200);
+            wheelSvg.style.transition = 'transform 0.2s ease-out';
+            wheelSvg.style.transform = 'rotate(0deg)';
+            this._mirrorWheelRotation(wheelSvg, 0);
+            setTimeout(() => { wheelSvg.style.transition = ''; }, 200);
         };
 
-        this.steeringWheelContainer.addEventListener('mousedown', onPointerDown);
-        this.steeringWheelContainer.addEventListener('touchstart', onPointerDown, {passive: false});
-
+        container.addEventListener('mousedown', onPointerDown);
+        container.addEventListener('touchstart', onPointerDown, { passive: false });
         window.addEventListener('mousemove', onPointerMove);
-        window.addEventListener('touchmove', onPointerMove, {passive: false});
-
+        window.addEventListener('touchmove', onPointerMove, { passive: false });
         window.addEventListener('mouseup', onPointerUp);
         window.addEventListener('touchend', onPointerUp);
+    }
+
+    _mirrorWheelRotation(sourceEl, degrees) {
+        // Keep both wheels in sync visually
+        if (sourceEl === this.visualSteeringWheel && this.mobVisualSteeringWheel) {
+            this.mobVisualSteeringWheel.style.transform = `rotate(${degrees}deg)`;
+        } else if (sourceEl === this.mobVisualSteeringWheel && this.visualSteeringWheel) {
+            this.visualSteeringWheel.style.transform = `rotate(${degrees}deg)`;
+        }
     }
 
     /**
@@ -787,6 +803,7 @@ export class UIManager {
 
         setTimeout(() => {
             this.simInstructionText.innerText = text;
+            if (this.mobInstructionText) this.mobInstructionText.innerText = text;
             this.simInstructionBanner.classList.remove('opacity-50');
         }, 150);
     }
@@ -929,12 +946,13 @@ export class UIManager {
      * @param {number} input -1 to 1
      */
     rotateSteeringWheel(input) {
-        if (!this.visualSteeringWheel) return;
-        // Don't update visual rotation from physics if user is actively dragging the wheel (we can check by checking if steeringInput != 0 roughly, or just let physics drive it if keyboard is used)
-        if (this.steeringInput !== 0) return; // User is dragging
-
-        const degrees = input * 180; // 1 = 180 degrees
-        this.visualSteeringWheel.style.transform = `rotate(${degrees}deg)`;
+        const degrees = input * 180;
+        if (this.visualSteeringWheel && this.steeringInput === 0) {
+            this.visualSteeringWheel.style.transform = `rotate(${degrees}deg)`;
+        }
+        if (this.mobVisualSteeringWheel && this.steeringInput === 0) {
+            this.mobVisualSteeringWheel.style.transform = `rotate(${degrees}deg)`;
+        }
     }
 
     showSimFailure(durationMs = 2000) {
@@ -949,65 +967,58 @@ export class UIManager {
 
     setSimModeUI(mode) {
         if (!this.btnModeEasy || !this.btnModeHard) return;
-        
-        // Initial setup for device type
-        if (this.simOnScreenControls) {
-            if (this.isMobile) {
-                this.simOnScreenControls.classList.remove('hidden');
-                this.steeringWheelContainer.classList.remove('hidden');
-            } else {
-                this.simOnScreenControls.classList.add('hidden');
-                this.steeringWheelContainer.classList.add('hidden');
-            }
-        }
+
+        // Desktop: hide on-screen controls entirely (keyboard-driven)
+        if (this.simOnScreenControls) this.simOnScreenControls.classList.add('hidden');
+        // Desktop floating wheel: only show via toggle button, never auto-show
+        if (this.steeringWheelContainer) this.steeringWheelContainer.classList.add('hidden');
 
         if (mode === 'EASY') {
             this.btnModeEasy.className = "px-3 py-1 rounded-md bg-primary text-on-primary font-bold shadow-sm transition-colors text-sm";
             this.btnModeHard.className = "px-3 py-1 rounded-md text-on-surface-variant hover:bg-surface-container-high font-bold transition-colors text-sm";
             if (this.simEasyInstructions) this.simEasyInstructions.classList.remove('hidden');
-            
+
             if (this.pedalIndicatorsContainer && this.simInstructionBanner) {
                 this.pedalIndicatorsContainer.classList.add('hidden');
                 this.simInstructionBanner.classList.remove('md:grid-cols-2');
                 this.simInstructionBanner.classList.add('md:grid-cols-1');
             }
-            
+
             // Hide Missions in Easy Mode
             if (this.missionDropdownContainer) this.missionDropdownContainer.classList.add('hidden');
-            
-            // Mobile Specifics
-            if (this.mobileGearsContainer) this.mobileGearsContainer.classList.add('hidden');
-            if (this.pedalClutchWrapper) this.pedalClutchWrapper.classList.add('hidden');
+
+            // Desktop gear visualizer: hide in easy
             if (this.gearVisualizerContainer) this.gearVisualizerContainer.classList.add('hidden');
-            
-            // Re-center remaining pedals visually
-            if (this.pedalGasWrapper) this.pedalGasWrapper.classList.remove('self-end');
+
+            // Mobile panel: show easy pedals, hide hard pedals + gears
+            if (this.mobEasyPedals) { this.mobEasyPedals.classList.remove('hidden'); this.mobEasyPedals.classList.add('flex'); }
+            if (this.mobHardPedals) { this.mobHardPedals.classList.add('hidden'); this.mobHardPedals.classList.remove('flex'); }
+            if (this.mobGearsRow) { this.mobGearsRow.classList.add('hidden'); this.mobGearsRow.classList.remove('flex'); }
 
         } else {
             this.btnModeHard.className = "px-3 py-1 rounded-md bg-primary text-on-primary font-bold shadow-sm transition-colors text-sm";
             this.btnModeEasy.className = "px-3 py-1 rounded-md text-on-surface-variant hover:bg-surface-container-high font-bold transition-colors text-sm";
             if (this.simEasyInstructions) this.simEasyInstructions.classList.add('hidden');
-            
+
             if (this.pedalIndicatorsContainer && this.simInstructionBanner) {
                 this.pedalIndicatorsContainer.classList.remove('hidden');
                 this.simInstructionBanner.classList.remove('md:grid-cols-1');
                 this.simInstructionBanner.classList.add('md:grid-cols-2');
             }
-            
+
             // Show Missions in Hard Mode
             if (this.missionDropdownContainer) this.missionDropdownContainer.classList.remove('hidden');
-            
-            // Mobile Specifics
-            if (this.mobileGearsContainer) {
-                if (this.isMobile) this.mobileGearsContainer.classList.remove('hidden');
-                else this.mobileGearsContainer.classList.add('hidden'); // Never show on desktop
+
+            // Desktop gear visualizer: show in hard
+            if (this.gearVisualizerContainer) {
+                this.gearVisualizerContainer.classList.remove('hidden');
+                this.gearVisualizerContainer.classList.add('md:flex');
             }
-            if (this.pedalClutchWrapper) this.pedalClutchWrapper.classList.remove('hidden');
-            
-            if (this.gearVisualizerContainer) this.gearVisualizerContainer.classList.remove('hidden');
-            
-            // Re-center
-            if (this.pedalGasWrapper) this.pedalGasWrapper.classList.add('self-end'); // Put back offset if we want it? Actually let's keep them straight for mobile
+
+            // Mobile panel: show hard pedals + gears, hide easy pedals
+            if (this.mobEasyPedals) { this.mobEasyPedals.classList.add('hidden'); this.mobEasyPedals.classList.remove('flex'); }
+            if (this.mobHardPedals) { this.mobHardPedals.classList.remove('hidden'); this.mobHardPedals.classList.add('flex'); }
+            if (this.mobGearsRow) { this.mobGearsRow.classList.remove('hidden'); this.mobGearsRow.classList.add('flex'); }
         }
     }
 

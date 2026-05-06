@@ -189,12 +189,19 @@ export class SimulatorManager {
         window.addEventListener('keydown', (e) => this._handleKey(e, true));
         window.addEventListener('keyup', (e) => this._handleKey(e, false));
 
-        // Touch/Mouse Events for Pedals
+        // Touch/Mouse Events for Pedals (desktop on-screen controls)
         this._bindPedalTouch('pedal-clutch', 'clutch');
         this._bindPedalTouch('pedal-brake', 'brake');
         this._bindPedalTouch('pedal-gas', 'gas');
 
-        // Touch Events for Mobile Gears
+        // Touch/Mouse Events for Mobile Panel pedals
+        this._bindPedalTouch('mob-pedal-gas', 'gas');
+        this._bindPedalTouch('mob-pedal-brake', 'brake');
+        this._bindPedalTouch('mob-pedal-clutch', 'clutch');
+        this._bindPedalTouch('mob-pedal-gas-hard', 'gas');
+        this._bindPedalTouch('mob-pedal-brake-hard', 'brake');
+
+        // Touch Events for Mobile Gears (both old container and new mob-gears-row)
         document.querySelectorAll('.sim-gear-btn').forEach(btn => {
             const press = (e) => {
                 if (e.cancelable) e.preventDefault();
@@ -347,10 +354,13 @@ export class SimulatorManager {
         const el = document.getElementById(elementId);
         if (!el) return;
         if (isPressed) {
-            el.style.transform = 'translateY(10px) scale(0.95)';
+            el.style.transform = 'translateY(6px) scale(0.95)';
+            el.style.filter = 'brightness(0.8)';
+            // Legacy color swap for old slate pedals
             el.classList.replace('bg-slate-300', 'bg-slate-400');
         } else {
             el.style.transform = 'translateY(0) scale(1)';
+            el.style.filter = '';
             el.classList.replace('bg-slate-400', 'bg-slate-300');
         }
     }

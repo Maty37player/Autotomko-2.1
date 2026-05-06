@@ -108,6 +108,10 @@
             height: 400px;
             box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.5);
         }
+        @media (max-width: 767px) {
+            #simulator-canvas { height: 300px; }
+            .mob-pedal-press { transform: translateY(6px) scale(0.96); filter: brightness(0.85); }
+        }
     </style>
 </head>
 
@@ -387,8 +391,8 @@
                         <p class="text-xl">Vyjel jsi mimo trať!</p>
                     </div>
 
-                    <!-- Visual Steering Wheel (Floating) -->
-                    <div id="steering-wheel-container" class="absolute bottom-6 right-6 w-32 h-32 hidden">
+                    <!-- Visual Steering Wheel (Floating) — desktop only via toggle -->
+                    <div id="steering-wheel-container" class="absolute bottom-6 right-6 w-32 h-32 hidden md:hidden">
                         <svg viewBox="0 0 100 100" id="visual-steering-wheel"
                             class="w-full h-full drop-shadow-2xl transition-transform duration-75">
                             <defs>
@@ -409,8 +413,8 @@
                     </div>
                 </div>
 
-                <!-- Gear Visualizer -->
-                <div id="gear-visualizer-container" class="flex w-full border-2 border-primary rounded-b-lg overflow-hidden hidden bg-surface mt-[-2px] relative z-10">
+                <!-- Gear Visualizer (desktop) -->
+                <div id="gear-visualizer-container" class="hidden md:flex w-full border-2 border-primary rounded-b-lg overflow-hidden bg-surface mt-[-2px] relative z-10">
                     <div data-gear-display="-1" class="flex-1 py-1 text-center font-bold text-xl border-r-2 border-primary text-primary bg-surface transition-colors">R</div>
                     <div data-gear-display="0" class="flex-1 py-1 text-center font-bold text-xl border-r-2 border-primary text-primary bg-surface transition-colors">N</div>
                     <div data-gear-display="1" class="flex-1 py-1 text-center font-bold text-xl border-r-2 border-primary text-primary bg-surface transition-colors">1</div>
@@ -419,10 +423,98 @@
                     <div data-gear-display="4" class="flex-1 py-1 text-center font-bold text-xl border-r-2 border-primary text-primary bg-surface transition-colors">4</div>
                     <div data-gear-display="5" class="flex-1 py-1 text-center font-bold text-xl text-primary bg-surface transition-colors">5</div>
                 </div>
+
+                <!-- ===== MOBILE PANEL (hidden on desktop) ===== -->
+                <div id="mob-sim-panel" class="md:hidden mt-3 -mx-4 -mb-4 border-t-2 border-primary/20 rounded-b-xl overflow-hidden">
+
+                    <!-- Instruction Strip -->
+                    <div class="bg-primary-container/40 px-4 py-2 flex items-center gap-2 min-h-[44px] border-b border-outline-variant">
+                        <span class="material-symbols-outlined text-primary text-base flex-shrink-0">info</span>
+                        <span id="mob-instruction-text" class="text-xs font-bold uppercase tracking-wide text-on-surface leading-snug">Načítání simulace...</span>
+                    </div>
+
+                    <!-- Controls Row: Pedals + Wheel -->
+                    <div class="bg-surface-container-lowest px-3 py-3 flex items-stretch gap-3">
+
+                        <!-- EASY MODE pedals: Gas + Brake -->
+                        <div id="mob-easy-pedals" class="flex gap-3 flex-1 items-stretch">
+                            <div class="flex flex-col gap-1 flex-1">
+                                <span class="text-[10px] font-bold text-center text-green-700 uppercase tracking-wide">Plyn</span>
+                                <div id="mob-pedal-gas"
+                                    class="flex-1 min-h-[90px] bg-green-100 border-2 border-b-4 border-green-400 rounded-xl shadow-md flex flex-col items-center justify-center select-none cursor-pointer transition-all duration-75">
+                                    <span class="material-symbols-outlined text-green-600 text-4xl">keyboard_arrow_up</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-1 flex-1">
+                                <span class="text-[10px] font-bold text-center text-red-700 uppercase tracking-wide">Brzda</span>
+                                <div id="mob-pedal-brake"
+                                    class="flex-1 min-h-[90px] bg-red-100 border-2 border-b-4 border-red-400 rounded-xl shadow-md flex flex-col items-center justify-center select-none cursor-pointer transition-all duration-75">
+                                    <span class="material-symbols-outlined text-red-600 text-4xl">keyboard_arrow_down</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- HARD MODE pedals: Clutch + Brake + Gas -->
+                        <div id="mob-hard-pedals" class="hidden flex gap-2 flex-1 items-end">
+                            <div class="flex flex-col gap-1 flex-1">
+                                <span class="text-[10px] font-bold text-center text-slate-600 uppercase">Spojka</span>
+                                <div id="mob-pedal-clutch"
+                                    class="h-20 bg-slate-200 border-2 border-b-4 border-slate-400 rounded-xl shadow-md flex items-center justify-center select-none cursor-pointer transition-all duration-75">
+                                    <span class="font-bold text-slate-500 text-sm">A</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-1 flex-1">
+                                <span class="text-[10px] font-bold text-center text-red-700 uppercase">Brzda</span>
+                                <div id="mob-pedal-brake-hard"
+                                    class="h-16 bg-red-100 border-2 border-b-4 border-red-400 rounded-xl shadow-md flex items-center justify-center select-none cursor-pointer transition-all duration-75 w-full self-end">
+                                    <span class="font-bold text-red-600 text-sm">S</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-1 flex-1">
+                                <span class="text-[10px] font-bold text-center text-green-700 uppercase">Plyn</span>
+                                <div id="mob-pedal-gas-hard"
+                                    class="h-20 bg-green-100 border-2 border-b-4 border-green-400 rounded-xl shadow-md flex items-center justify-center select-none cursor-pointer transition-all duration-75">
+                                    <span class="font-bold text-green-600 text-sm">D</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Steering Wheel (always in mobile panel) -->
+                        <div id="mob-steering-wheel-container" class="w-28 h-28 flex-shrink-0 self-center">
+                            <svg viewBox="0 0 100 100" id="mob-visual-steering-wheel"
+                                class="w-full h-full drop-shadow-2xl transition-transform duration-75">
+                                <defs>
+                                    <radialGradient id="mobWheelGrad" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                                        <stop offset="0%" style="stop-color:#333;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#111;stop-opacity:1" />
+                                    </radialGradient>
+                                </defs>
+                                <circle cx="50" cy="50" r="46" fill="none" stroke="url(#mobWheelGrad)" stroke-width="8" />
+                                <circle cx="50" cy="50" r="42" fill="none" stroke="#000" stroke-width="1" />
+                                <path d="M50 10 L50 40 M14 65 L42 55 M86 65 L58 55" stroke="#222" stroke-width="10" stroke-linecap="round" />
+                                <path d="M50 10 L50 40 M14 65 L42 55 M86 65 L58 55" stroke="#111" stroke-width="4" stroke-linecap="round" />
+                                <circle cx="50" cy="50" r="14" fill="#1a1a1a" stroke="#333" stroke-width="2" />
+                                <circle cx="50" cy="50" r="4" fill="#000" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Gear Buttons Row (Hard mode only) -->
+                    <div id="mob-gears-row" class="hidden bg-surface-container px-3 pb-3 pt-2 flex justify-center gap-2 border-t border-outline-variant flex-wrap">
+                        <button data-gear="-1" class="sim-gear-btn w-11 h-11 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">R</button>
+                        <button data-gear="0" class="sim-gear-btn w-11 h-11 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">N</button>
+                        <button data-gear="1" class="sim-gear-btn w-11 h-11 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">1</button>
+                        <button data-gear="2" class="sim-gear-btn w-11 h-11 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">2</button>
+                        <button data-gear="3" class="sim-gear-btn w-11 h-11 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">3</button>
+                        <button data-gear="4" class="sim-gear-btn w-11 h-11 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">4</button>
+                        <button data-gear="5" class="sim-gear-btn w-11 h-11 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">5</button>
+                    </div>
+                </div>
+                <!-- ===== END MOBILE PANEL ===== -->
             </div>
 
-            <!-- Instruction Banner & Controls Indicator -->
-            <div id="sim-instruction-banner" class="bg-white border border-outline-variant rounded-xl mb-lg shadow-sm grid grid-cols-1 md:grid-cols-2 overflow-hidden">
+            <!-- Instruction Banner & Controls Indicator (desktop only) -->
+            <div id="sim-instruction-banner" class="hidden md:grid bg-white border border-outline-variant rounded-xl mb-lg shadow-sm grid-cols-1 md:grid-cols-2 overflow-hidden">
                  <!-- Instructions Half -->
                  <div class="p-lg flex items-center gap-md border-b md:border-b-0 md:border-r border-outline-variant">
                     <div class="w-10 h-10 bg-primary-container rounded-full flex items-center justify-center flex-shrink-0">
@@ -448,7 +540,7 @@
                  </div>
             </div>
 
-            <div class="flex justify-center gap-lg" id="sim-controls-section">
+            <div class="hidden" id="sim-controls-section">
 
                 <!-- Pedals UI -->
                 <div id="sim-on-screen-controls" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm flex flex-col items-center w-full relative">
@@ -490,7 +582,7 @@
             </div>
 
             <!-- Steering Instructions -->
-            <div id="sim-easy-instructions" class="flex justify-center gap-xl mt-xl bg-white p-lg rounded-xl border border-outline-variant shadow-sm hidden">
+            <div id="sim-easy-instructions" class="hidden md:flex justify-center gap-xl mt-xl bg-white p-lg rounded-xl border border-outline-variant shadow-sm">
                 <div class="flex items-center gap-md text-on-surface-variant font-body-lg">
                     <strong class="text-primary">W</strong> Dopředu
                 </div>
