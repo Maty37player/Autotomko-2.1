@@ -141,80 +141,50 @@ class App {
         }
     }
 
-    _bindContactModal() {
-        const btnContact = document.getElementById('btn-contact-support');
-        const modal = document.getElementById('contact-modal');
-        const closeBtn = document.getElementById('close-contact-modal');
+    _bindModal(btnId, modalId, closeBtnId) {
+        const btn = document.getElementById(btnId);
+        const modal = document.getElementById(modalId);
+        const closeBtn = document.getElementById(closeBtnId);
 
-        if (btnContact && modal && closeBtn) {
-            btnContact.addEventListener('click', () => {
+        if (btn && modal && closeBtn) {
+            const openModal = (e) => {
+                if (e) e.preventDefault();
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
-            });
+            };
 
-            closeBtn.addEventListener('click', () => {
+            const closeModal = (e) => {
+                if (e) e.preventDefault();
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
-            });
+            };
+
+            // Use both click and touchstart for responsiveness
+            btn.addEventListener('click', openModal);
+            btn.addEventListener('touchstart', openModal, { passive: false });
+
+            closeBtn.addEventListener('click', closeModal);
+            closeBtn.addEventListener('touchstart', closeModal, { passive: false });
+
 
             modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.add('hidden');
-                    modal.classList.remove('flex');
-                }
+                if (e.target === modal) closeModal(e);
             });
         }
+    }
+
+    _bindContactModal() {
+        this._bindModal('btn-contact-support', 'contact-modal', 'close-contact-modal');
     }
 
     _bindTermsModal() {
-        const btnTerms = document.getElementById('btn-terms-of-service');
-        const modal = document.getElementById('terms-modal');
-        const closeBtn = document.getElementById('close-terms-modal');
-
-        if (btnTerms && modal && closeBtn) {
-            btnTerms.addEventListener('click', () => {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            });
-
-            closeBtn.addEventListener('click', () => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            });
-
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.add('hidden');
-                    modal.classList.remove('flex');
-                }
-            });
-        }
+        this._bindModal('btn-terms-of-service', 'terms-modal', 'close-terms-modal');
     }
 
     _bindPrivacyModal() {
-        const btnPrivacy = document.getElementById('btn-privacy-policy');
-        const modal = document.getElementById('privacy-modal');
-        const closeBtn = document.getElementById('close-privacy-modal');
-
-        if (btnPrivacy && modal && closeBtn) {
-            btnPrivacy.addEventListener('click', () => {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            });
-
-            closeBtn.addEventListener('click', () => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            });
-
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.add('hidden');
-                    modal.classList.remove('flex');
-                }
-            });
-        }
+        this._bindModal('btn-privacy-policy', 'privacy-modal', 'close-privacy-modal');
     }
+
 
     _bindControlsModal() {
         const btnOpen = this.uiManager.btnOpenControls;
