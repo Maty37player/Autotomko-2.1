@@ -942,9 +942,13 @@ export class UIManager {
      * Toggles the visual steering wheel visibility.
      */
     toggleSteeringWheel() {
-        if (!this.steeringWheelContainer || !this.btnToggleWheel) return;
+        if (!this.btnToggleWheel) return;
         
-        const isHidden = this.steeringWheelContainer.classList.toggle('hidden');
+        // On mobile, we toggle the wheel in the bottom panel. On desktop, the floating one.
+        const target = this.isMobile ? this.mobSteeringWheelContainer : this.steeringWheelContainer;
+        if (!target) return;
+
+        const isHidden = target.classList.toggle('hidden');
         
         if (isHidden) {
             this.btnToggleWheel.innerText = 'ZAPNOUT';
@@ -986,8 +990,15 @@ export class UIManager {
 
         // Desktop: hide on-screen controls entirely (keyboard-driven)
         if (this.simOnScreenControls) this.simOnScreenControls.classList.add('hidden');
-        // Desktop floating wheel: only show via toggle button, never auto-show
+        // Desktop floating wheel: hide by default when switching modes
         if (this.steeringWheelContainer) this.steeringWheelContainer.classList.add('hidden');
+        
+        // Sync toggle button text
+        if (this.btnToggleWheel) {
+            this.btnToggleWheel.innerText = 'ZAPNOUT';
+            this.btnToggleWheel.classList.replace('bg-primary', 'bg-surface-container-high');
+            this.btnToggleWheel.classList.replace('text-white', 'text-primary');
+        }
 
         if (mode === 'EASY') {
             this.btnModeEasy.className = "px-3 py-1 rounded-md bg-primary text-on-primary font-bold shadow-sm transition-colors text-sm";
