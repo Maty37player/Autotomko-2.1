@@ -342,7 +342,7 @@
             <div class="flex justify-between items-center mb-lg mt-md">
                 <h2 class="font-h2 text-h2 text-on-surface">2D Jízdní simulátor</h2>
                 <!-- Mission Dropdown -->
-                <div class="relative z-50" id="mission-dropdown-container">
+                <div class="relative z-50 hidden md:block" id="mission-dropdown-container">
                     <button id="btn-mission-dropdown" class="bg-primary-container text-on-primary-container px-lg py-2 rounded-lg flex items-center gap-md shadow-sm border border-primary/20 hover:bg-primary-container/80 transition-colors">
                         <span class="material-symbols-outlined text-primary">assignment</span>
                         <span id="sim-mission-dropdown-text" class="font-body-md font-bold">Vyber si misi</span>
@@ -361,16 +361,19 @@
                         <div>Rychlost: <span id="sim-speed" class="font-bold text-primary">0 km/h</span></div>
                         <div>Motor: <span id="sim-rpm" class="font-bold text-primary">0 RPM</span></div>
                     </div>
-                    <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                        <div class="flex items-center gap-1 bg-surface-container rounded-lg p-1">
+                    <div class="flex flex-nowrap items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+                        <div class="flex items-center gap-1 bg-surface-container rounded-lg p-1 shrink-0">
                             <button id="btn-mode-easy" class="px-3 py-1 rounded-md bg-primary text-on-primary font-bold shadow-sm transition-colors text-sm">Snadný</button>
                             <button id="btn-mode-hard" class="px-3 py-1 rounded-md text-on-surface-variant hover:bg-surface-container-high font-bold transition-colors text-sm">Realistický</button>
                         </div>
 
                         <button id="btn-open-controls"
-                            class="font-button bg-surface-container text-on-surface-variant px-md py-sm rounded flex items-center gap-xs hover:bg-surface-container-high transition-colors">
-                            <span class="material-symbols-outlined">settings</span> Nastavení
+                            class="font-button bg-surface-container text-on-surface-variant px-3 py-1 rounded flex items-center gap-1 hover:bg-surface-container-high transition-colors text-sm shrink-0">
+                            <span class="material-symbols-outlined text-sm">settings</span> Nastavení
                         </button>
+                        <div class="bg-surface-container text-primary font-bold px-3 py-1 rounded flex items-center justify-center text-sm border border-outline-variant shrink-0 min-w-[2.5rem]" title="Aktuální převodový stupeň">
+                            <span id="sim-gear">N</span>
+                        </div>
                     </div>
                 </div>
 
@@ -413,22 +416,13 @@
                     </div>
                 </div>
 
-                <!-- Gear Visualizer (desktop) -->
-                <div id="gear-visualizer-container" class="hidden md:flex w-full border-2 border-primary rounded-b-lg overflow-hidden bg-surface mt-[-2px] relative z-10">
-                    <div data-gear-display="-1" class="flex-1 py-1 text-center font-bold text-xl border-r-2 border-primary text-primary bg-surface transition-colors">R</div>
-                    <div data-gear-display="0" class="flex-1 py-1 text-center font-bold text-xl border-r-2 border-primary text-primary bg-surface transition-colors">N</div>
-                    <div data-gear-display="1" class="flex-1 py-1 text-center font-bold text-xl border-r-2 border-primary text-primary bg-surface transition-colors">1</div>
-                    <div data-gear-display="2" class="flex-1 py-1 text-center font-bold text-xl border-r-2 border-primary text-primary bg-surface transition-colors">2</div>
-                    <div data-gear-display="3" class="flex-1 py-1 text-center font-bold text-xl border-r-2 border-primary text-primary bg-surface transition-colors">3</div>
-                    <div data-gear-display="4" class="flex-1 py-1 text-center font-bold text-xl border-r-2 border-primary text-primary bg-surface transition-colors">4</div>
-                    <div data-gear-display="5" class="flex-1 py-1 text-center font-bold text-xl text-primary bg-surface transition-colors">5</div>
-                </div>
+
 
                 <!-- ===== MOBILE PANEL (hidden on desktop) ===== -->
                 <div id="mob-sim-panel" class="md:hidden mt-3 -mx-4 -mb-4 border-t-2 border-primary/20 rounded-b-xl overflow-hidden">
 
-                    <!-- Instruction Strip -->
-                    <div class="bg-primary-container/40 px-4 py-2 flex items-center gap-2 min-h-[44px] border-b border-outline-variant">
+                    <!-- Instruction Strip (Hidden as requested: no missions on mobile) -->
+                    <div class="hidden bg-primary-container/40 px-4 py-2 flex items-center gap-2 min-h-[44px] border-b border-outline-variant">
                         <span class="material-symbols-outlined text-primary text-base flex-shrink-0">info</span>
                         <span id="mob-instruction-text" class="text-xs font-bold uppercase tracking-wide text-on-surface leading-snug">Načítání simulace...</span>
                     </div>
@@ -500,14 +494,13 @@
                     </div>
 
                     <!-- Gear Buttons Row (Hard mode only) -->
-                    <div id="mob-gears-row" class="hidden bg-surface-container px-3 pb-3 pt-2 flex justify-center gap-2 border-t border-outline-variant flex-wrap">
-                        <button data-gear="-1" class="sim-gear-btn w-11 h-11 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">R</button>
-                        <button data-gear="0" class="sim-gear-btn w-11 h-11 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">N</button>
-                        <button data-gear="1" class="sim-gear-btn w-11 h-11 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">1</button>
-                        <button data-gear="2" class="sim-gear-btn w-11 h-11 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">2</button>
-                        <button data-gear="3" class="sim-gear-btn w-11 h-11 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">3</button>
-                        <button data-gear="4" class="sim-gear-btn w-11 h-11 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">4</button>
-                        <button data-gear="5" class="sim-gear-btn w-11 h-11 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">5</button>
+                    <div id="mob-gears-row" class="hidden bg-surface-container px-2 pb-3 pt-2 flex justify-center gap-2 border-t border-outline-variant flex-nowrap">
+                        <button data-gear="-1" class="sim-gear-btn w-10 h-10 shrink-0 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">R</button>
+                        <button data-gear="0" class="sim-gear-btn w-10 h-10 shrink-0 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">N</button>
+                        <button data-gear="1" class="sim-gear-btn w-10 h-10 shrink-0 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">1</button>
+                        <button data-gear="2" class="sim-gear-btn w-10 h-10 shrink-0 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">2</button>
+                        <button data-gear="3" class="sim-gear-btn w-10 h-10 shrink-0 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">3</button>
+                        <button data-gear="4" class="sim-gear-btn w-10 h-10 shrink-0 rounded-full bg-surface border-2 border-outline-variant text-on-surface-variant font-bold shadow-sm flex items-center justify-center text-sm">4</button>
                     </div>
                 </div>
                 <!-- ===== END MOBILE PANEL ===== -->

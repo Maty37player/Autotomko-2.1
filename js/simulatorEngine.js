@@ -219,7 +219,6 @@ export class SimulatorManager {
             else if (gear === -1) this.uiGear.innerText = 'R';
             else this.uiGear.innerText = gear;
         }
-        if (this.uiManager) this.uiManager.updateGearDisplay(gear);
     }
 
     resetCar(reason = "") {
@@ -333,12 +332,22 @@ export class SimulatorManager {
         const el = document.getElementById(elementId);
         if (!el) return;
 
+        let activeTouchId = null;
+
         const press = (e) => {
             if (e.cancelable) e.preventDefault();
+            if (e.type === 'touchstart') {
+                activeTouchId = e.changedTouches[0].identifier;
+            }
             this.inputs[inputKey] = 1;
             this._updatePedalUI(elementId, true);
         };
         const release = (e) => {
+            if (e.type === 'touchend' || e.type === 'touchcancel') {
+                const touchEnded = Array.from(e.changedTouches).some(t => t.identifier === activeTouchId);
+                if (!touchEnded && activeTouchId !== null) return; // ignore if not our touch
+            }
+            activeTouchId = null;
             this.inputs[inputKey] = 0;
             this._updatePedalUI(elementId, false);
         };
@@ -346,8 +355,14 @@ export class SimulatorManager {
         el.addEventListener('mousedown', press);
         el.addEventListener('touchstart', press, { passive: false });
 
-        window.addEventListener('mouseup', release);
-        window.addEventListener('touchend', release);
+        const windowRelease = (e) => {
+            if (e.type === 'mouseup') release(e);
+        };
+
+        window.addEventListener('mouseup', windowRelease);
+        el.addEventListener('mouseleave', release);
+        el.addEventListener('touchend', release);
+        el.addEventListener('touchcancel', release);
     }
 
     _updatePedalUI(elementId, isPressed) {
@@ -514,8 +529,8 @@ export class SimulatorManager {
             this.state.speed = 0;
         }
 
-        // --- Mission Logic (HARD Mode only) ---
-        if (this.mode === 'HARD') {
+        // --- Mission Logic (HARD Mode only, Skip on mobile) ---
+        if (this.mode === 'HARD' && (!this.uiManager || !this.uiManager.isMobile)) {
             const mission = this.missions[this.state.currentMissionIndex];
             if (mission && mission.type !== "DONE") {
                 const isMovingFwd = this.state.speed > 1.0;
@@ -622,6 +637,11 @@ export class SimulatorManager {
                     }
                 } else {
                     msg = "Jezdi bezpečně!";
+                }
+
+                // If mobile, don't show mission text
+                if (this.uiManager && this.uiManager.isMobile) {
+                    msg = "Realistický režim: řazení, spojka a motor.";
                 }
                 
                 // Check if off-road (based on collision logic)

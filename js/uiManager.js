@@ -70,8 +70,6 @@ export class UIManager {
         this.pedalBrakeWrapper = document.getElementById('pedal-brake-wrapper');
         this.pedalGasWrapper = document.getElementById('pedal-gas-wrapper');
         this.btnToggleWheel = document.getElementById('btn-toggle-wheel');
-        this.gearVisualizerContainer = document.getElementById('gear-visualizer-container');
-        this.gearDisplays = document.querySelectorAll('[data-gear-display]');
         
         this.pedalIndicatorsContainer = document.getElementById('pedal-indicators-container');
         this.indicatorClutch = document.getElementById('indicator-clutch');
@@ -185,15 +183,22 @@ export class UIManager {
         let isDragging = false;
         let startAngle = 0;
         let currentRotation = 0;
+        let activeTouchId = null;
 
         const getAngle = (e) => {
             const rect = wheelSvg.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
             let clientX, clientY;
-            if (e.touches && e.touches.length > 0) {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
+            if (e.type.includes('touch')) {
+                let touch = Array.from(e.changedTouches).find(t => t.identifier === activeTouchId);
+                if (!touch) touch = Array.from(e.touches).find(t => t.identifier === activeTouchId);
+                if (!touch && e.touches.length > 0 && activeTouchId === null) {
+                    touch = e.touches[0];
+                }
+                if (!touch) return null;
+                clientX = touch.clientX;
+                clientY = touch.clientY;
             } else {
                 clientX = e.clientX;
                 clientY = e.clientY;
@@ -202,27 +207,37 @@ export class UIManager {
         };
 
         const onPointerDown = (e) => {
+            if (e.type === 'touchstart') {
+                activeTouchId = e.changedTouches[0].identifier;
+            }
+            const angle = getAngle(e);
+            if (angle === null) return;
             isDragging = true;
-            startAngle = getAngle(e) - currentRotation;
-            e.preventDefault();
+            startAngle = angle - currentRotation;
+            if (e.cancelable) e.preventDefault();
         };
 
         const onPointerMove = (e) => {
             if (!isDragging) return;
             const angle = getAngle(e);
+            if (angle === null) return;
             currentRotation = angle - startAngle;
             if (currentRotation > Math.PI) currentRotation = Math.PI;
             if (currentRotation < -Math.PI) currentRotation = -Math.PI;
             this.steeringInput = currentRotation / Math.PI;
             const degrees = currentRotation * (180 / Math.PI);
             wheelSvg.style.transform = `rotate(${degrees}deg)`;
-            // Mirror rotation on the other wheel
             this._mirrorWheelRotation(wheelSvg, degrees);
-            e.preventDefault();
+            if (e.cancelable) e.preventDefault();
         };
 
-        const onPointerUp = () => {
+        const onPointerUp = (e) => {
+            if (e.type === 'touchend' || e.type === 'touchcancel') {
+                const touchEnded = Array.from(e.changedTouches).some(t => t.identifier === activeTouchId);
+                if (!touchEnded) return; // Ignore if it's not the wheel's touch ending
+            }
             isDragging = false;
+            activeTouchId = null;
             currentRotation = 0;
             this.steeringInput = 0;
             wheelSvg.style.transition = 'transform 0.2s ease-out';
@@ -237,6 +252,7 @@ export class UIManager {
         window.addEventListener('touchmove', onPointerMove, { passive: false });
         window.addEventListener('mouseup', onPointerUp);
         window.addEventListener('touchend', onPointerUp);
+        window.addEventListener('touchcancel', onPointerUp);
     }
 
     _mirrorWheelRotation(sourceEl, degrees) {
@@ -987,9 +1003,6 @@ export class UIManager {
             // Hide Missions in Easy Mode
             if (this.missionDropdownContainer) this.missionDropdownContainer.classList.add('hidden');
 
-            // Desktop gear visualizer: hide in easy
-            if (this.gearVisualizerContainer) this.gearVisualizerContainer.classList.add('hidden');
-
             // Mobile panel: show easy pedals, hide hard pedals + gears
             if (this.mobEasyPedals) { this.mobEasyPedals.classList.remove('hidden'); this.mobEasyPedals.classList.add('flex'); }
             if (this.mobHardPedals) { this.mobHardPedals.classList.add('hidden'); this.mobHardPedals.classList.remove('flex'); }
@@ -1006,14 +1019,8 @@ export class UIManager {
                 this.simInstructionBanner.classList.add('md:grid-cols-2');
             }
 
-            // Show Missions in Hard Mode
-            if (this.missionDropdownContainer) this.missionDropdownContainer.classList.remove('hidden');
-
-            // Desktop gear visualizer: show in hard
-            if (this.gearVisualizerContainer) {
-                this.gearVisualizerContainer.classList.remove('hidden');
-                this.gearVisualizerContainer.classList.add('md:flex');
-            }
+            // Show Missions in Hard Mode (only on desktop)
+            if (this.missionDropdownContainer && !this.isMobile) this.missionDropdownContainer.classList.remove('hidden');
 
             // Mobile panel: show hard pedals + gears, hide easy pedals
             if (this.mobEasyPedals) { this.mobEasyPedals.classList.add('hidden'); this.mobEasyPedals.classList.remove('flex'); }
@@ -1022,16 +1029,4 @@ export class UIManager {
         }
     }
 
-    updateGearDisplay(gear) {
-        if (!this.gearDisplays) return;
-        this.gearDisplays.forEach(el => {
-            if (parseInt(el.dataset.gearDisplay) === gear) {
-                el.classList.add('bg-primary', 'text-white');
-                el.classList.remove('text-primary', 'bg-surface');
-            } else {
-                el.classList.remove('bg-primary', 'text-white');
-                el.classList.add('text-primary', 'bg-surface');
-            }
-        });
-    }
 }
