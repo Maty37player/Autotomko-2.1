@@ -21,6 +21,7 @@ class App {
     async init() {
         this._bindNavigation();
         this._bindContactModal();
+        this._bindTermsModal();
         this._bindControlsModal();
 
         // Show Welcome View by default
@@ -146,6 +147,31 @@ class App {
 
         if (btnContact && modal && closeBtn) {
             btnContact.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            });
+
+            closeBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }
+            });
+        }
+    }
+
+    _bindTermsModal() {
+        const btnTerms = document.getElementById('btn-terms-of-service');
+        const modal = document.getElementById('terms-modal');
+        const closeBtn = document.getElementById('close-terms-modal');
+
+        if (btnTerms && modal && closeBtn) {
+            btnTerms.addEventListener('click', () => {
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
             });
